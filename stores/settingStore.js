@@ -19,6 +19,14 @@ export const useSettingStore = defineStore(
           icon: "ant-design:project-outlined",
           children: [],
         },
+        {
+          title: "Sản phẩm",
+          key: "product",
+          url: "/product",
+          bitIndex: 0,
+          icon: "ant-design:product-outlined",
+          children: [],
+        },
         // {
         //   title: "Quản Lý Danh Mục",
         //   key: "category_management",
