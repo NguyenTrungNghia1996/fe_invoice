@@ -11,12 +11,6 @@
       <div class="bg-white p-3 rounded-lg shadow-sm mb-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
           <div class="flex flex-col md:flex-row gap-2 w-full">
-            <a-range-picker
-              v-model:value="dateRange"
-              format="DD/MM/YYYY"
-              class="w-full"
-              @change="handleDateChange"
-            />
             <a-input-search
               v-model:value="search_text"
               placeholder="Tìm kiếm theo mã hóa đơn..."
@@ -24,6 +18,11 @@
               allow-clear
               class="w-full"
               @search="onSearch"
+            />
+            <a-range-picker
+              v-model:value="dateRange"
+              format="DD/MM/YYYY"
+              @change="handleDateChange"
             />
           </div>
 
