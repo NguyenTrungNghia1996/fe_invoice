@@ -11,7 +11,6 @@
       <div class="bg-white p-3 rounded-lg shadow-sm mb-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
           <a-input-search v-model:value="search_text" placeholder="Tìm kiếm sản phẩm..." enter-button allow-clear class="w-full md:w-80" @search="onSearch" />
-
           <div class="flex items-center gap-2">
             <a-popconfirm title="Bạn chắc chắn muốn xoá?" ok-text="Xoá" cancel-text="Huỷ" @confirm="handleDelete">
               <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">

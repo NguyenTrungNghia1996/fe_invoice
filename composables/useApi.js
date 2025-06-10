@@ -2,7 +2,9 @@ let ENDPOINTS = {
   LOGIN: "/login",
   S3: "/api/presigned_url",
   //PRODUCTS
-  PRODUCTS:"/api/products",
+  PRODUCTS: "/api/products",
+  INVOICES: "/api/invoices",
+  SETTINGS: "/api/settings"
 };
 import { useUserStore } from "~~/stores/userStore";
 class Request {
@@ -95,6 +97,7 @@ class RestApi {
     this.request = new Request();
     this.user = new User(this.request);
     this.products = new Products(this.request);
+    this.invoices = new Invoices(this.request);
   }
   async get_url_upload(acl, content_encoding, content_type, key, platform) {
     let data = { acl, content_encoding, content_type, key, platform };
@@ -163,7 +166,7 @@ class User {
     return await this.request.delete(ENDPOINTS.USER, data);
   }
 }
-class Products{
+class Products {
   constructor() {
     this.request = new Request();
   }
@@ -181,6 +184,23 @@ class Products{
   }
 }
 
+class Invoices{
+    constructor() {
+    this.request = new Request();
+  }
+  async list(data) {
+    return await this.request.get(ENDPOINTS.INVOICES, data);
+  }
+  async create(data) {
+    return await this.request.post(ENDPOINTS.INVOICES, data);
+  }
+  async update(data) {
+    return await this.request.put(ENDPOINTS.INVOICES, data);
+  }
+  async delete(data) {
+    return await this.request.delete(ENDPOINTS.INVOICES, data);
+  }
+}
 export default () => {
   return { RestApi: new RestApi() };
 };
