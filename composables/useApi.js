@@ -98,6 +98,7 @@ class RestApi {
     this.user = new User(this.request);
     this.products = new Products(this.request);
     this.invoices = new Invoices(this.request);
+    this.setting = new Setting(this.request);
   }
   async get_url_upload(acl, content_encoding, content_type, key, platform) {
     let data = { acl, content_encoding, content_type, key, platform };
@@ -184,8 +185,8 @@ class Products {
   }
 }
 
-class Invoices{
-    constructor() {
+class Invoices {
+  constructor() {
     this.request = new Request();
   }
   async list(data) {
@@ -199,6 +200,18 @@ class Invoices{
   }
   async delete(data) {
     return await this.request.delete(ENDPOINTS.INVOICES, data);
+  }
+}
+
+class Setting {
+  constructor() {
+    this.request = new Request();
+  }
+  async get(data) {
+    return await this.request.get(ENDPOINTS.SETTINGS, data);
+  }
+  async update(data) {
+    return await this.request.put(ENDPOINTS.SETTINGS, data);
   }
 }
 export default () => {
