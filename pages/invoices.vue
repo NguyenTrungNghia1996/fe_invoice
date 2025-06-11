@@ -38,6 +38,7 @@
                 Xoá đã chọn ({{ selectedRowKeys.length }})
               </a-button>
             </a-popconfirm>
+            <a-button type="primary" @click="exportToExcel">Xuất excel</a-button>
           </div>
         </div>
       </div>
@@ -171,7 +172,6 @@
         </div>
       </div>
     </a-modal>
-    <div @click="exportToExcel">test</div>
     <iframe id="print-frame" style="display:none;"></iframe>
   </div>
 </template>
