@@ -13,7 +13,9 @@
         <a-form-item label="Tên cửa hàng" name="storeName" :rules="[{ required: true, message: 'Vui lòng nhập tên cửa hàng' }]">
           <a-input v-model:value="form.storeName" placeholder="Nhập tên cửa hàng" />
         </a-form-item>
-
+        <a-form-item label="Địa Chỉ" name="address" :rules="[{ required: true, message: 'Vui lòng địa chỉ' }]">
+          <a-input v-model:value="form.address" placeholder="Nhập địa chỉ" />
+        </a-form-item>
         <!-- Phone Number -->
         <a-form-item label="Số điện thoại" name="phone" :rules="[
           { required: true, message: 'Vui lòng nhập số điện thoại' },
@@ -46,6 +48,7 @@ const { RestApi } = useApi()
 const form = ref({
   id: '',
   storeName: '',
+  address: '',
   phone: '',
   logoUrl: ''
 })
@@ -61,6 +64,7 @@ const fetchStoreSettings = async () => {
       form.value = {
         id: data.value.data.id,
         storeName: data.value.data.storeName,
+        address:data.value.data.address,
         phone: data.value.data.phone,
         logoUrl: data.value.data.logoUrl
       }
@@ -93,7 +97,3 @@ const resetForm = () => {
 // Lifecycle
 await fetchStoreSettings()
 </script>
-
-<style scoped>
-/* Không còn cần avatar-uploader, nhưng bạn có thể giữ nếu muốn */
-</style>

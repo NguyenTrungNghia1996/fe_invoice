@@ -93,7 +93,7 @@ const submitInvoice = async () => {
 
       message.success('Tạo hóa đơn thành công!')
       printInvoice()
-      router.push({ name: 'invoices' })
+      // router.push({ name: 'invoices' })
     } else {
       throw new Error('Tạo hóa đơn thất bại')
     }
@@ -152,24 +152,67 @@ const generatePrintableHtml = (invoice, store = {}) => {
 
   const createdAt = new Date(invoice.createdAt).toLocaleString('vi-VN')
 
+  // return `
+  //   ${store.logoUrl ? `<div class="text-center"><img src="${store.logoUrl}" style="max-height: 80px; margin-bottom: 5px;" /></div>` : ''}
+  //   <div class="text-center bold">${store.storeName || 'CỬA HÀNG'}</div>
+  //   ${store.address ? `<div class="text-center">Địa Chỉ: ${store.address}</div>` : ''}
+  //   ${store.phone ? `<div class="text-center">Điện thoại: ${store.phone}</div>` : ''}
+  //   <hr />
+  //   <div class="text-center bold">HÓA ĐƠN BÁN HÀNG</div>
+  //   <div class="text-center">Hóa Đơn: ${invoice.code}</div>
+  //   <div class="text-center">Ngày: ${createdAt}</div>
+  //   <hr />
+  //   ${items}
+  //   <hr />
+  //   <div class="row bold">
+  //     <span>Tổng tiền:</span>
+  //     <span>${formatCurrency(calculateTotal(invoice.items))}</span>
+  //   </div>
+  //   ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
+  //   <div class="text-center" style="margin-top:10px;">Cảm ơn quý khách!</div>
+  // `
   return `
-    ${store.logoUrl ? `<div class="text-center"><img src="${store.logoUrl}" style="max-height: 80px; margin-bottom: 5px;" /></div>` : ''}
-    <div class="text-center bold">${store.storeName || 'CỬA HÀNG'}</div>
-    ${store.phone ? `<div class="text-center">Điện thoại: ${store.phone}</div>` : ''}
-    <hr />
-    <div class="text-center bold">HÓA ĐƠN BÁN HÀNG</div>
-    <div class="text-center">Mã: ${invoice.code}</div>
-    <div class="text-center">Ngày: ${createdAt}</div>
-    <hr />
-    ${items}
-    <hr />
-    <div class="row bold">
-      <span>Tổng tiền:</span>
-      <span>${formatCurrency(calculateTotal(invoice.items))}</span>
-    </div>
-    ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
-    <div class="text-center" style="margin-top:10px;">Cảm ơn quý khách!</div>
-  `
+  ${store.logoUrl ? `<div style="text-align:center;"><img src="${store.logoUrl}" style="max-height: 80px; margin-bottom: 10px;" /></div>` : ''}
+  <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
+  ${store.address ? `<div style="text-align:center;">Địa chỉ: ${store.address}</div>` : ''}
+  ${store.phone ? `<div style="text-align:center;">Điện thoại: ${store.phone}</div>` : ''}
+  <hr />
+  <div style="text-align:center; font-weight:bold;">HÓA ĐƠN BÁN HÀNG</div>
+  <div style="text-align:center;">Số HĐ: <b>${invoice.code}</b></div>
+  <div style="text-align:center;">Ngày ${createdAt}</div>
+  <hr />
+  <table style="width:100%; border-collapse: collapse;">
+    <thead>
+      <tr>
+        <th style="text-align:left;">Tên SP</th>
+        <th style="text-align:right;">Đơn giá</th>
+        <th style="text-align:right;">SL</th>
+        <th style="text-align:right;">Thành tiền</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${invoice.items.map(item => `
+        <tr>
+          <td>${item.name}</td>
+          <td style="text-align:right;">${formatCurrency(item.price)}</td>
+          <td style="text-align:right;">${item.quantity}</td>
+          <td style="text-align:right;">${formatCurrency(item.price * item.quantity)}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+  <hr />
+  <div class="row">
+    <span>Tổng tiền hàng:</span>
+    <span>${formatCurrency(calculateTotal(invoice.items))}</span>
+  </div>
+  <div class="row bold">
+    <span>Tổng thanh toán:</span>
+    <span>${formatCurrency(calculateTotal(invoice.items))}</span>
+  </div>
+  ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
+  <div style="text-align:center; margin-top:10px;">Cảm ơn quý khách!</div>
+`;
 }
 
 const formatCurrency = (val) => {
