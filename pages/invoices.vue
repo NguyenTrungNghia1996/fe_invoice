@@ -325,8 +325,8 @@ const html = `
       html, body {
         margin: 0;
         font-family: monospace;
-        font-size: 16px; /* tăng cỡ chữ */
-        width: auto; /* bỏ giới hạn chiều rộng */
+        font-size: 13px;
+        width: 80mm;
         padding: 10px;
       }
       hr {
@@ -337,27 +337,19 @@ const html = `
       .text-center { text-align: center }
       .bold { font-weight: bold }
       .row { display: flex; justify-content: space-between }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 16px; /* đảm bảo đồng bộ */
-      }
-      td {
-        padding: 2px 0;
-      }
     </style>
   </head>
   <body onload="window.print()">
-    ${setting.logoUrl ? `<div class="text-center"><img src="${setting.logoUrl}" style="max-height:80px;margin:4px auto;"/></div>` : ''}
+    ${setting.logoUrl ? `<div class="text-center"><img src="${setting.logoUrl}" style="max-width:60px;margin:4px auto;"/></div>` : ''}
     <div class="text-center bold">${setting.storeName || 'CỬA HÀNG'}</div>
-    ${setting.address ? `<div class="text-center">Địa chỉ: ${setting.address}</div>` : ''}
-    ${setting.phone ? `<div class="text-center">Điện Thoại: ${setting.phone}</div>` : ''}
+    <div class="text-center">Địa chỉ: ${setting.address || ''}</div>
+    <div class="text-center">Điện Thoại: ${setting.phone || ''}</div>
     <hr />
     <div class="text-center bold">HÓA ĐƠN BÁN HÀNG</div>
     <div class="text-center">Hóa Đơn: ${invoice.code}</div>
     <div class="text-center">Ngày: ${formatDateTime(invoice.createdAt)}</div>
     <hr />
-    <table>
+    <table style="width: 100%;">
       <thead>
         <tr>
           <td><b>Tên SP</b></td>
@@ -382,12 +374,11 @@ const html = `
       <span>Tổng thanh toán:</span>
       <span>${formatCurrency(calculateInvoiceTotal(invoice))}</span>
     </div>
-    ${invoice.note ? `<div style="margin-top: 8px;">Ghi chú: ${invoice.note}</div>` : ''}
+    ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
     <div class="text-center" style="margin-top:10px;">Cảm ơn quý khách!</div>
   </body>
 </html>
 `;
-
 
 
   const iframe = document.getElementById('print-frame')
@@ -435,4 +426,3 @@ const rows = []
 }
 await fetchInvoices({ ...param.value })
 </script>
-
