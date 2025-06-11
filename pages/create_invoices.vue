@@ -13,7 +13,7 @@ const loadingProducts = ref(false)
 const productQuantity = ref(1)
 const submitting = ref(false)
 const printData = ref(null)
-const storeInfo = ref(null) // 🆕 Lưu thông tin cửa hàng
+const storeInfo = ref(null)
 const itemColumns = [
   { title: 'Sản phẩm', dataIndex: 'name', key: 'name' },
   { title: 'Số lượng', key: 'quantity', width: 120 },
@@ -68,6 +68,7 @@ const resetForm = () => {
   invoice.value = { items: [], note: '' }
   selectedProduct.value = null
   productQuantity.value = 1
+  printData.value = null
 }
 
 const submitInvoice = async () => {
@@ -93,7 +94,7 @@ const submitInvoice = async () => {
 
       message.success('Tạo hóa đơn thành công!')
       printInvoice()
-      // router.push({ name: 'invoices' })
+      resetForm() // Reset form sau khi tạo thành công
     } else {
       throw new Error('Tạo hóa đơn thất bại')
     }
@@ -152,63 +153,44 @@ const generatePrintableHtml = (invoice, store = {}) => {
 
   const createdAt = new Date(invoice.createdAt).toLocaleString('vi-VN')
 
-  // return `
-  //   ${store.logoUrl ? `<div class="text-center"><img src="${store.logoUrl}" style="max-height: 80px; margin-bottom: 5px;" /></div>` : ''}
-  //   <div class="text-center bold">${store.storeName || 'CỬA HÀNG'}</div>
-  //   ${store.address ? `<div class="text-center">Địa Chỉ: ${store.address}</div>` : ''}
-  //   ${store.phone ? `<div class="text-center">Điện thoại: ${store.phone}</div>` : ''}
-  //   <hr />
-  //   <div class="text-center bold">HÓA ĐƠN BÁN HÀNG</div>
-  //   <div class="text-center">Hóa Đơn: ${invoice.code}</div>
-  //   <div class="text-center">Ngày: ${createdAt}</div>
-  //   <hr />
-  //   ${items}
-  //   <hr />
-  //   <div class="row bold">
-  //     <span>Tổng tiền:</span>
-  //     <span>${formatCurrency(calculateTotal(invoice.items))}</span>
-  //   </div>
-  //   ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
-  //   <div class="text-center" style="margin-top:10px;">Cảm ơn quý khách!</div>
-  // `
   return `
-  ${store.logoUrl ? `<div style="text-align:center;"><img src="${store.logoUrl}" style="max-height: 80px; margin-bottom: 10px;" /></div>` : ''}
-  <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
-  ${store.address ? `<div style="text-align:center;">Địa chỉ: ${store.address}</div>` : ''}
-  ${store.phone ? `<div style="text-align:center;">Điện thoại: ${store.phone}</div>` : ''}
-  <hr />
-  <div style="text-align:center; font-weight:bold;">HÓA ĐƠN BÁN HÀNG</div>
-  <div style="text-align:center;">Số HĐ: <b>${invoice.code}</b></div>
-  <div style="text-align:center;">Ngày ${createdAt}</div>
-  <hr />
-  <table style="width:100%; border-collapse: collapse;">
-    <thead>
-      <tr>
-        <th style="text-align:left;">Tên SP</th>
-        <th style="text-align:right;">Đơn giá</th>
-        <th style="text-align:right;">SL</th>
-        <th style="text-align:right;">Thành tiền</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${invoice.items.map(item => `
+    ${store.logoUrl ? `<div style="text-align:center;"><img src="${store.logoUrl}" style="max-height: 80px; margin-bottom: 10px;" /></div>` : ''}
+    <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
+    ${store.address ? `<div style="text-align:center;">Địa chỉ: ${store.address}</div>` : ''}
+    ${store.phone ? `<div style="text-align:center;">Điện thoại: ${store.phone}</div>` : ''}
+    <hr />
+    <div style="text-align:center; font-weight:bold;">HÓA ĐƠN BÁN HÀNG</div>
+    <div style="text-align:center;">Số HĐ: <b>${invoice.code}</b></div>
+    <div style="text-align:center;">Ngày ${createdAt}</div>
+    <hr />
+    <table style="width:100%; border-collapse: collapse;">
+      <thead>
         <tr>
-          <td>${item.name}</td>
-          <td style="text-align:right;">${formatCurrency(item.price)}</td>
-          <td style="text-align:right;">${item.quantity}</td>
-          <td style="text-align:right;">${formatCurrency(item.price * item.quantity)}</td>
+          <th style="text-align:left;">Tên SP</th>
+          <th style="text-align:right;">Đơn giá</th>
+          <th style="text-align:right;">SL</th>
+          <th style="text-align:right;">Thành tiền</th>
         </tr>
-      `).join('')}
-    </tbody>
-  </table>
-  <hr />
-  <div class="row bold">
-    <span>Tổng thanh toán:</span>
-    <span>${formatCurrency(calculateTotal(invoice.items))}</span>
-  </div>
-  ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
-  <div style="text-align:center; margin-top:10px;">Cảm ơn quý khách!</div>
-`;
+      </thead>
+      <tbody>
+        ${invoice.items.map(item => `
+          <tr>
+            <td>${item.name}</td>
+            <td style="text-align:right;">${formatCurrency(item.price)}</td>
+            <td style="text-align:right;">${item.quantity}</td>
+            <td style="text-align:right;">${formatCurrency(item.price * item.quantity)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <hr />
+    <div class="row bold">
+      <span>Tổng thanh toán:</span>
+      <span>${formatCurrency(calculateTotal(invoice.items))}</span>
+    </div>
+    ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
+    <div style="text-align:center; margin-top:10px;">Cảm ơn quý khách!</div>
+  `
 }
 
 const formatCurrency = (val) => {
@@ -220,9 +202,9 @@ const formatCurrency = (val) => {
 
 await fetchProducts()
 </script>
+
 <template>
   <div class="min-h-screen bg-white p-4">
-
     <div class="mb-6">
       <h1 class="text-xl font-bold text-gray-800">Tạo hóa đơn mới</h1>
       <p class="text-gray-600 text-sm">Thêm sản phẩm và thông tin vào hóa đơn</p>
@@ -232,7 +214,15 @@ await fetchProducts()
       <a-form layout="vertical">
         <a-form-item label="Chọn sản phẩm">
           <div class="flex gap-2">
-            <a-select v-model:value="selectedProduct" show-search placeholder="Tìm kiếm sản phẩm" :filter-option="false" :not-found-content="loadingProducts ? 'Đang tải...' : 'Không tìm thấy'" @search="handleSearchProduct" style="width: 100%">
+            <a-select 
+              v-model:value="selectedProduct" 
+              show-search 
+              placeholder="Tìm kiếm sản phẩm" 
+              :filter-option="false" 
+              :not-found-content="loadingProducts ? 'Đang tải...' : 'Không tìm thấy'" 
+              @search="handleSearchProduct" 
+              style="width: 100%"
+            >
               <a-select-option v-for="product in productOptions" :key="product.id" :value="product.id">
                 {{ product.name }} - {{ formatCurrency(product.price) }}
               </a-select-option>
@@ -245,7 +235,14 @@ await fetchProducts()
           <a-input-number v-model:value="productQuantity" :min="1" style="width: 100%" />
         </a-form-item>
 
-        <a-table class="mt-6" :columns="itemColumns" :data-source="invoice.items" size="small" :pagination="false" bordered>
+        <a-table 
+          class="mt-6" 
+          :columns="itemColumns" 
+          :data-source="invoice.items" 
+          size="small" 
+          :pagination="false" 
+          bordered
+        >
           <template #bodyCell="{ column, record, index }">
             <template v-if="column.key === 'quantity'">
               <a-input-number v-model:value="record.quantity" :min="1" />
@@ -272,7 +269,12 @@ await fetchProducts()
 
         <div class="flex justify-end gap-2 mt-6">
           <a-button @click="resetForm">Hủy bỏ</a-button>
-          <a-button @click="submitInvoice" type="primary" :loading="submitting" :disabled="!invoice.items.length">
+          <a-button 
+            @click="submitInvoice" 
+            type="primary" 
+            :loading="submitting" 
+            :disabled="!invoice.items.length"
+          >
             Tạo hóa đơn
           </a-button>
         </div>
@@ -280,6 +282,5 @@ await fetchProducts()
     </div>
 
     <iframe id="print-frame" style="display:none;"></iframe>
-
   </div>
 </template>
