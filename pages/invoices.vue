@@ -58,6 +58,16 @@
         </div>
       </div>
 
+      <!-- Product Stats -->
+      <div class="bg-white p-4 rounded-lg shadow-sm mb-4">
+        <div class="font-semibold text-gray-700 mb-2">Thống kê sản phẩm:</div>
+        <ul class="text-sm space-y-1">
+          <li v-for="(stat, key) in summary.productStats" :key="key">
+            • {{ stat.name }}: {{ stat.quantity }} sản phẩm – {{ formatCurrency(stat.revenue) }}
+          </li>
+        </ul>
+      </div>
+
       <!-- Table -->
       <div class="bg-white">
         <a-table 
@@ -93,6 +103,9 @@
                 <a-button type="text" size="small" @click="viewDetail(record)">
                   Chi tiết
                 </a-button>
+                <a-button type="text" size="small" @click="printInvoice(record)">
+                  In lại
+                </a-button>
                 <a-popconfirm 
                   title="Bạn chắc chắn muốn xoá?" 
                   ok-text="Xoá" 
@@ -112,7 +125,7 @@
 
     <!-- Detail Modal -->
     <a-modal 
-      v-model:visible="detailVisible" 
+      v-model:open="detailVisible" 
       :title="'Chi tiết hóa đơn ' + selectedInvoice?.code" 
       width="700px"
       :footer="null"
@@ -158,14 +171,18 @@
         </div>
       </div>
     </a-modal>
+    <div @click="exportToExcel">test</div>
+    <iframe id="print-frame" style="display:none;"></iframe>
   </div>
 </template>
 
 <script setup>
+import * as XLSX from 'xlsx'
 import dayjs from 'dayjs'
 const { RestApi } = useApi()
-const param = ref({ 
-  page: 1, 
+
+const param = ref({
+  page: 1,
   limit: 10,
   from: dayjs().startOf('month').format('DD/MM/YYYY'),
   to: dayjs().endOf('month').format('DD/MM/YYYY'),
@@ -180,125 +197,83 @@ const invoices = ref([])
 const summary = ref({
   totalInvoices: 0,
   totalAmount: 0,
-  totalQuantity: 0
+  totalQuantity: 0,
+  productStats: {}
 })
 const loading = ref(false)
 const detailVisible = ref(false)
 const selectedInvoice = ref(null)
 const selectedRowKeys = ref([])
 
-// Columns
 const columns = [
-  {
-    title: 'Mã hóa đơn',
-    dataIndex: 'code',
-    key: 'code',
-    width: '180px'
-  },
-  {
-    title: 'Ngày tạo',
-    dataIndex: 'createdAt',
-    key: 'createdAt',
-    width: '150px'
-  },
-  {
-    title: 'Sản phẩm',
-    key: 'items'
-  },
-  {
-    title: 'Tổng tiền',
-    key: 'total',
-    align: 'right',
-    width: '150px'
-  },
-  {
-    title: 'Hành động',
-    key: 'actions',
-    width: '120px',
-    align: 'center'
-  }
+  { title: 'Mã hóa đơn', dataIndex: 'code', key: 'code', width: '180px' },
+  { title: 'Ngày tạo', dataIndex: 'createdAt', key: 'createdAt', width: '150px' },
+  { title: 'Sản phẩm', key: 'items' },
+  { title: 'Tổng tiền', key: 'total', align: 'right', width: '150px' },
+  { title: 'Hành động', key: 'actions', width: '150px', align: 'center' }
 ]
 
 const detailColumns = [
-  {
-    title: 'Tên sản phẩm',
-    dataIndex: 'name',
-    key: 'name'
-  },
-  {
-    title: 'Số lượng',
-    dataIndex: 'quantity',
-    key: 'quantity',
-    align: 'center'
-  },
-  {
-    title: 'Đơn giá',
-    key: 'price',
-    align: 'right'
-  },
-  {
-    title: 'Thành tiền',
-    key: 'total',
-    align: 'right'
-  }
+  { title: 'Tên sản phẩm', dataIndex: 'name', key: 'name' },
+  { title: 'Số lượng', dataIndex: 'quantity', key: 'quantity', align: 'center' },
+  { title: 'Đơn giá', key: 'price', align: 'right' },
+  { title: 'Thành tiền', key: 'total', align: 'right' }
 ]
 
-// Computed
 const pagination = computed(() => ({
   current: param.value.page,
   pageSize: param.value.limit,
   total: summary.value.totalInvoices,
   showSizeChanger: true,
-  pageSizeOptions: ['1','10', '20', '50', '100'],
+  pageSizeOptions: ['10', '20', '50', '100'],
   showTotal: (total) => `Tổng ${total} hóa đơn`,
   size: 'small'
 }))
 
-// Methods
-const fetchInvoices = async (param_source = null) => {
+const fetchInvoices = async (paramSource = null) => {
   loading.value = true
   try {
-    const params = param_source || param.value
+    const params = paramSource || param.value
     const { data } = await RestApi.invoices.list({ params })
     invoices.value = data.value?.data?.invoices || []
     summary.value = {
       totalInvoices: data.value?.data?.total || 0,
       totalAmount: data.value?.data?.totalAmount || 0,
-      totalQuantity: Object.values(data.value?.data?.productStats || {}).reduce((sum, item) => sum + item.quantity, 0)
+      totalQuantity: Object.values(data.value?.data?.productStats || {}).reduce((sum, p) => sum + p.quantity, 0),
+      productStats: data.value?.data?.productStats || {}
     }
   } finally {
     loading.value = false
   }
 }
 
-const handleTableChange = async (paginator) => {
-  param.value.page = paginator.current
-  param.value.limit = paginator.pageSize
-  await fetchInvoices({...param.value})
+const handleTableChange = async (pager) => {
+  param.value.page = pager.current
+  param.value.limit = pager.pageSize
+  await fetchInvoices({ ...param.value })
 }
 
 const handleDateChange = async (dates) => {
-  if (dates && dates.length === 2) {
+  if (dates?.length === 2) {
     param.value.from = dates[0].format('DD/MM/YYYY')
     param.value.to = dates[1].format('DD/MM/YYYY')
     param.value.page = 1
-    await fetchInvoices({...param.value})
+    await fetchInvoices({ ...param.value })
   }
 }
 
 const onSearch = async () => {
   param.value.page = 1
   param.value.code = search_text.value
-  await fetchInvoices({...param.value})
+  await fetchInvoices({ ...param.value })
 }
 
-const onSelectChange = (selectedKeys) => {
-  selectedRowKeys.value = selectedKeys
+const onSelectChange = (keys) => {
+  selectedRowKeys.value = keys
 }
 
-const calculateInvoiceTotal = (invoice) => {
-  return invoice.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-}
+const calculateInvoiceTotal = (invoice) =>
+  invoice.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
 const viewDetail = (invoice) => {
   selectedInvoice.value = invoice
@@ -308,38 +283,151 @@ const viewDetail = (invoice) => {
 const handleDelete = async (id) => {
   try {
     await RestApi.invoices.delete({ params: { id } })
-    message.success('Xoá hóa đơn thành công!')
-    await fetchInvoices({...param.value})
-    selectedRowKeys.value = selectedRowKeys.value.filter(key => key !== id)
-  } catch (error) {
-    message.error('Xoá hóa đơn không thành công!')
+    message.success('Xoá thành công!')
+    selectedRowKeys.value = selectedRowKeys.value.filter(k => k !== id)
+    await fetchInvoices({ ...param.value })
+  } catch (e) {
+    message.error('Không thể xoá!')
   }
 }
 
 const handleDeleteSelected = async () => {
   if (!selectedRowKeys.value.length) return
-
   try {
     await RestApi.invoices.delete({ params: { id: selectedRowKeys.value.join(',') } })
     message.success(`Đã xoá ${selectedRowKeys.value.length} hóa đơn`)
     selectedRowKeys.value = []
-    await fetchInvoices({...param.value})
-  } catch (error) {
-    message.error('Xoá hóa đơn không thành công!')
+    await fetchInvoices({ ...param.value })
+  } catch (e) {
+    message.error('Không thể xoá hàng loạt!')
   }
 }
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('vi-VN', { 
-    style: 'currency', 
-    currency: 'VND' 
-  }).format(value)
-}
 
-const formatDate = (dateString) => {
-  return dayjs(dateString).format('DD/MM/YYYY')
+const formatCurrency = (value) =>
+  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
+
+const formatDate = (val) =>
+  dayjs(val).format('DD/MM/YYYY')
+
+const formatDateTime = (val) =>
+  dayjs(val).format('HH:mm DD/MM/YYYY')
+
+const printInvoice = async (invoice) => {
+  const settingRes = await RestApi.setting.get()
+  const setting = settingRes?.data?.value?.data || {}
+
+const html = `
+<html>
+  <head>
+    <title>In hóa đơn</title>
+    <style>
+      @page { margin: 0 }
+      html, body {
+        margin: 0;
+        font-family: monospace;
+        font-size: 13px;
+        width: 80mm;
+        padding: 10px;
+      }
+      hr {
+        border: none;
+        border-top: 1px dashed black;
+        margin: 10px 0;
+      }
+      .text-center { text-align: center }
+      .bold { font-weight: bold }
+      .row { display: flex; justify-content: space-between }
+    </style>
+  </head>
+  <body onload="window.print()">
+    ${setting.logoUrl ? `<div class="text-center"><img src="${setting.logoUrl}" style="max-width:60px;margin:4px auto;"/></div>` : ''}
+    <div class="text-center bold">${setting.storeName || 'CỬA HÀNG'}</div>
+    <div class="text-center">Địa chỉ: ${setting.address || ''}</div>
+    <div class="text-center">Điện Thoại: ${setting.phone || ''}</div>
+    <hr />
+    <div class="text-center bold">HÓA ĐƠN BÁN HÀNG</div>
+    <div class="text-center">Hóa Đơn: ${invoice.code}</div>
+    <div class="text-center">Ngày: ${formatDateTime(invoice.createdAt)}</div>
+    <hr />
+    <table style="width: 100%;">
+      <thead>
+        <tr>
+          <td><b>Tên SP</b></td>
+          <td style="text-align:right;"><b>SL</b></td>
+          <td style="text-align:right;"><b>Đơn giá</b></td>
+          <td style="text-align:right;"><b>Thành tiền</b></td>
+        </tr>
+      </thead>
+      <tbody>
+        ${invoice.items.map(i => `
+          <tr>
+            <td>${i.name}</td>
+            <td style="text-align:right;">${i.quantity}</td>
+            <td style="text-align:right;">${formatCurrency(i.price)}</td>
+            <td style="text-align:right;">${formatCurrency(i.quantity * i.price)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <hr />
+    <div class="row bold">
+      <span>Tổng tiền:</span>
+      <span>${formatCurrency(calculateInvoiceTotal(invoice))}</span>
+    </div>
+    <div class="row bold">
+      <span>Thành tiền:</span>
+      <span>${formatCurrency(calculateInvoiceTotal(invoice))}</span>
+    </div>
+    ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
+    <div class="text-center" style="margin-top:10px;">Cảm ơn quý khách!</div>
+  </body>
+</html>
+`;
+
+
+  const iframe = document.getElementById('print-frame')
+  const doc = iframe.contentWindow.document
+  doc.open()
+  doc.write(html)
+  doc.close()
 }
-const formatDateTime = (dateString) => {
-  return dayjs(dateString).format('HH:mm DD/MM/YYYY')
+const exportToExcel = () => {
+  
+const rows = []
+  invoices.value.forEach((inv, i) => {
+    rows.push({
+      'STT': i + 1,
+      'Mã hóa đơn': inv.code,
+      'Ngày tạo': formatDateTime(inv.createdAt),
+      'Sản phẩm': '',
+      'Số lượng': '',
+      'Đơn giá': '',
+      'Thành tiền': '',
+      'Tổng tiền': formatCurrency(calculateInvoiceTotal(inv)),
+      'Ghi chú': inv.note || ''
+    })
+
+    // Các sản phẩm bên trong hóa đơn
+    inv.items.forEach(item => {
+      rows.push({
+        'STT': '',
+        'Mã hóa đơn': '',
+        'Ngày tạo': '',
+        'Sản phẩm': item.name,
+        'Số lượng': item.quantity,
+        'Đơn giá': item.price,
+        'Thành tiền': item.price * item.quantity,
+        'Tổng tiền': '',
+        'Ghi chú': ''
+      })
+    })
+  })
+
+  const worksheet = XLSX.utils.json_to_sheet(rows, { skipHeader: false })
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách hóa đơn')
+  XLSX.writeFile(workbook, 'Danh_sach_hoa_don.xlsx')
 }
-await fetchInvoices({...param.value})
+await fetchInvoices({ ...param.value })
 </script>
+
