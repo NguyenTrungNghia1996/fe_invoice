@@ -1,11 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { message } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
-
 const { RestApi } = useApi()
-const router = useRouter()
-
 const invoice = ref({ items: [], note: '' })
 const selectedProduct = ref(null)
 const productOptions = ref([])
@@ -13,7 +7,7 @@ const loadingProducts = ref(false)
 const productQuantity = ref(1)
 const submitting = ref(false)
 const printData = ref(null)
-const storeInfo = ref(null) // 🆕 Lưu thông tin cửa hàng
+const storeInfo = ref(null)
 const itemColumns = [
   { title: 'Sản phẩm', dataIndex: 'name', key: 'name' },
   { title: 'Số lượng', key: 'quantity', width: 120 },
@@ -27,19 +21,23 @@ const fetchProducts = async (search = '') => {
   try {
     const { data } = await RestApi.products.list({ params: { search: search.trim() } })
     productOptions.value = data.value?.data?.products || []
+
+    if (productOptions.value.length === 1) {
+      addProductToInvoice(productOptions.value[0])
+    }
   } finally {
     loadingProducts.value = false
   }
 }
 
-const handleSearchProduct = (value) => {
-  fetchProducts(value.trim())
+const handleSelectProduct = (id) => {
+  const product = productOptions.value.find(p => p.id === id)
+  if (product) {
+    addProductToInvoice(product)
+  }
 }
 
-const handleAddProduct = () => {
-  const product = productOptions.value.find(p => p.id === selectedProduct.value)
-  if (!product) return
-
+const addProductToInvoice = (product) => {
   const existing = invoice.value.items.find(item => item.productId === product.id)
   if (existing) {
     existing.quantity += productQuantity.value
@@ -51,9 +49,9 @@ const handleAddProduct = () => {
       quantity: productQuantity.value
     })
   }
-
   selectedProduct.value = null
   productQuantity.value = 1
+  productOptions.value = []
 }
 
 const removeItem = (index) => {
@@ -68,6 +66,7 @@ const resetForm = () => {
   invoice.value = { items: [], note: '' }
   selectedProduct.value = null
   productQuantity.value = 1
+  productOptions.value = []
 }
 
 const submitInvoice = async () => {
@@ -75,7 +74,6 @@ const submitInvoice = async () => {
     message.warning('Vui lòng thêm sản phẩm')
     return
   }
-
   submitting.value = true
   try {
     const { data } = await RestApi.invoices.create({
@@ -87,13 +85,11 @@ const submitInvoice = async () => {
 
     if (data.value?.status === 'success') {
       printData.value = data.value.data
-
       const { data: settingRes } = await RestApi.setting.get()
       storeInfo.value = settingRes.value?.data || {}
-
       message.success('Tạo hóa đơn thành công!')
       printInvoice()
-      // router.push({ name: 'invoices' })
+      resetForm()
     } else {
       throw new Error('Tạo hóa đơn thất bại')
     }
@@ -106,11 +102,9 @@ const submitInvoice = async () => {
 
 const printInvoice = () => {
   if (!printData.value) return
-
   const html = generatePrintableHtml(printData.value, storeInfo.value)
   const iframe = document.getElementById('print-frame')
   const doc = iframe.contentWindow.document
-
   doc.open()
   doc.write(`
     <html>
@@ -143,75 +137,46 @@ const printInvoice = () => {
 }
 
 const generatePrintableHtml = (invoice, store = {}) => {
-  const items = invoice.items.map(item => `
-    <div class="row">
-      <span>${item.name} x${item.quantity}</span>
-      <span>${formatCurrency(item.price * item.quantity)}</span>
-    </div>
-  `).join('')
-
   const createdAt = new Date(invoice.createdAt).toLocaleString('vi-VN')
-
-  // return `
-  //   ${store.logoUrl ? `<div class="text-center"><img src="${store.logoUrl}" style="max-height: 80px; margin-bottom: 5px;" /></div>` : ''}
-  //   <div class="text-center bold">${store.storeName || 'CỬA HÀNG'}</div>
-  //   ${store.address ? `<div class="text-center">Địa Chỉ: ${store.address}</div>` : ''}
-  //   ${store.phone ? `<div class="text-center">Điện thoại: ${store.phone}</div>` : ''}
-  //   <hr />
-  //   <div class="text-center bold">HÓA ĐƠN BÁN HÀNG</div>
-  //   <div class="text-center">Hóa Đơn: ${invoice.code}</div>
-  //   <div class="text-center">Ngày: ${createdAt}</div>
-  //   <hr />
-  //   ${items}
-  //   <hr />
-  //   <div class="row bold">
-  //     <span>Tổng tiền:</span>
-  //     <span>${formatCurrency(calculateTotal(invoice.items))}</span>
-  //   </div>
-  //   ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
-  //   <div class="text-center" style="margin-top:10px;">Cảm ơn quý khách!</div>
-  // `
   return `
-  ${store.logoUrl ? `<div style="text-align:center;"><img src="${store.logoUrl}" style="max-height: 80px; margin-bottom: 10px;" /></div>` : ''}
-  <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
-  ${store.address ? `<div style="text-align:center;">Địa chỉ: ${store.address}</div>` : ''}
-  ${store.phone ? `<div style="text-align:center;">Điện thoại: ${store.phone}</div>` : ''}
-  <hr />
-  <div style="text-align:center; font-weight:bold;">HÓA ĐƠN BÁN HÀNG</div>
-  <div style="text-align:center;">Số HĐ: <b>${invoice.code}</b></div>
-  <div style="text-align:center;">Ngày ${createdAt}</div>
-  <hr />
-  <table style="width:100%; border-collapse: collapse;">
-    <thead>
-      <tr>
-        <th style="text-align:left;">Tên SP</th>
-        <th style="text-align:right;">Đơn giá</th>
-        <th style="text-align:right;">SL</th>
-        <th style="text-align:right;">Thành tiền</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${invoice.items.map(item => `
+  <div style="font-size: 16px; width: auto;">
+    ${store.logoUrl ? `<div style="text-align:center;"><img src="${store.logoUrl}" style="max-height: 80px; margin-bottom: 10px;" /></div>` : ''}
+    <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
+    ${store.address ? `<div style="text-align:center;">Địa chỉ: ${store.address}</div>` : ''}
+    ${store.phone ? `<div style="text-align:center;">Điện thoại: ${store.phone}</div>` : ''}
+    <hr />
+    <div style="text-align:center; font-weight:bold;">HÓA ĐƠN BÁN HÀNG</div>
+    <div style="text-align:center;">Số HĐ: <b>${invoice.code}</b></div>
+    <div style="text-align:center;">Ngày ${createdAt}</div>
+    <hr />
+    <table style="width:100%; border-collapse: collapse; font-size: 16px;">
+      <thead>
         <tr>
-          <td>${item.name}</td>
-          <td style="text-align:right;">${formatCurrency(item.price)}</td>
-          <td style="text-align:right;">${item.quantity}</td>
-          <td style="text-align:right;">${formatCurrency(item.price * item.quantity)}</td>
+          <th style="text-align:left;">Tên SP</th>
+          <th style="text-align:right;">Đơn giá</th>
+          <th style="text-align:right;">SL</th>
+          <th style="text-align:right;">Thành tiền</th>
         </tr>
-      `).join('')}
-    </tbody>
-  </table>
-  <hr />
-  <div class="row">
-    <span>Tổng tiền hàng:</span>
-    <span>${formatCurrency(calculateTotal(invoice.items))}</span>
+      </thead>
+      <tbody>
+        ${invoice.items.map(item => `
+          <tr>
+            <td>${item.name}</td>
+            <td style="text-align:right;">${formatCurrency(item.price)}</td>
+            <td style="text-align:right;">${item.quantity}</td>
+            <td style="text-align:right;">${formatCurrency(item.price * item.quantity)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <hr />
+    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 16px;">
+      <span>Tổng thanh toán:</span>
+      <span>${formatCurrency(calculateTotal(invoice.items))}</span>
+    </div>
+    ${invoice.note ? `<div style="margin-top:10px;">Ghi chú: ${invoice.note}</div>` : ''}
+    <div style="text-align:center; margin-top:10px;">Cảm ơn quý khách!</div>
   </div>
-  <div class="row bold">
-    <span>Tổng thanh toán:</span>
-    <span>${formatCurrency(calculateTotal(invoice.items))}</span>
-  </div>
-  ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
-  <div style="text-align:center; margin-top:10px;">Cảm ơn quý khách!</div>
 `;
 }
 
@@ -224,9 +189,9 @@ const formatCurrency = (val) => {
 
 await fetchProducts()
 </script>
+
 <template>
   <div class="min-h-screen bg-white p-4">
-
     <div class="mb-6">
       <h1 class="text-xl font-bold text-gray-800">Tạo hóa đơn mới</h1>
       <p class="text-gray-600 text-sm">Thêm sản phẩm và thông tin vào hóa đơn</p>
@@ -234,19 +199,12 @@ await fetchProducts()
 
     <div class="bg-white p-4 rounded-lg shadow-sm mb-4">
       <a-form layout="vertical">
-        <a-form-item label="Chọn sản phẩm">
-          <div class="flex gap-2">
-            <a-select v-model:value="selectedProduct" show-search placeholder="Tìm kiếm sản phẩm" :filter-option="false" :not-found-content="loadingProducts ? 'Đang tải...' : 'Không tìm thấy'" @search="handleSearchProduct" style="width: 100%">
-              <a-select-option v-for="product in productOptions" :key="product.id" :value="product.id">
-                {{ product.name }} - {{ formatCurrency(product.price) }}
-              </a-select-option>
-            </a-select>
-            <a-button type="primary" @click="handleAddProduct" :disabled="!selectedProduct">Thêm</a-button>
-          </div>
-        </a-form-item>
-
-        <a-form-item label="Số lượng" v-if="selectedProduct">
-          <a-input-number v-model:value="productQuantity" :min="1" style="width: 100%" />
+        <a-form-item label="Tìm hoặc chọn sản phẩm">
+          <a-select v-model:value="selectedProduct" show-search placeholder="Tìm kiếm sản phẩm" :filter-option="false" :not-found-content="loadingProducts ? 'Đang tải...' : 'Không tìm thấy'" @search="fetchProducts" @change="handleSelectProduct" style="width: 100%">
+            <a-select-option v-for="product in productOptions" :key="product.id" :value="product.id">
+              {{ product.name }} - {{ formatCurrency(product.price) }}
+            </a-select-option>
+          </a-select>
         </a-form-item>
 
         <a-table class="mt-6" :columns="itemColumns" :data-source="invoice.items" size="small" :pagination="false" bordered>
@@ -284,6 +242,5 @@ await fetchProducts()
     </div>
 
     <iframe id="print-frame" style="display:none;"></iframe>
-
   </div>
 </template>
