@@ -63,8 +63,8 @@
       </a-form>
 
       <template #footer>
-        <a-button key="back" @click="resetForm" size="small">Huỷ</a-button>
-        <a-button key="submit" type="primary" :loading="modalLoading" @click="submitForm" size="small">
+        <a-button key="back" @click="resetForm">Huỷ</a-button>
+        <a-button key="submit" type="primary" :loading="modalLoading" @click="submitForm">
           {{ editingProduct ? 'Cập nhật' : 'Thêm mới' }}
         </a-button>
       </template>

@@ -11,29 +11,12 @@
       <div class="bg-white p-3 rounded-lg shadow-sm mb-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
           <div class="flex flex-col md:flex-row gap-2 w-full">
-            <a-input-search
-              v-model:value="search_text"
-              placeholder="Tìm kiếm theo mã hóa đơn..."
-              enter-button
-              allow-clear
-              class="w-full"
-              @search="onSearch"
-            />
-            <a-range-picker
-              v-model:value="dateRange"
-              format="DD/MM/YYYY"
-              @change="handleDateChange"
-            />
+            <a-input-search v-model:value="search_text" placeholder="Tìm kiếm theo mã hóa đơn..." enter-button allow-clear class="w-full" @search="onSearch" />
+            <a-range-picker v-model:value="dateRange" format="DD/MM/YYYY" @change="handleDateChange" />
           </div>
 
           <div class="flex items-center gap-2">
-            <a-popconfirm 
-              title="Bạn chắc chắn muốn xoá các hóa đơn đã chọn?" 
-              ok-text="Xoá" 
-              cancel-text="Huỷ" 
-              @confirm="handleDeleteSelected"
-              :disabled="!selectedRowKeys.length"
-            >
+            <a-popconfirm title="Bạn chắc chắn muốn xoá các hóa đơn đã chọn?" ok-text="Xoá" cancel-text="Huỷ" @confirm="handleDeleteSelected" :disabled="!selectedRowKeys.length">
               <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">
                 Xoá đã chọn ({{ selectedRowKeys.length }})
               </a-button>
@@ -71,17 +54,7 @@
 
       <!-- Table -->
       <div class="bg-white">
-        <a-table 
-          :columns="columns" 
-          :data-source="invoices" 
-          :loading="loading" 
-          :pagination="pagination"
-          :row-selection="{ selectedRowKeys, onChange: onSelectChange }"
-          row-key="id" 
-          size="small" 
-          @change="handleTableChange"
-          bordered
-        >
+        <a-table :columns="columns" :data-source="invoices" :loading="loading" :pagination="pagination" :row-selection="{ selectedRowKeys, onChange: onSelectChange }" row-key="id" size="small" @change="handleTableChange" bordered>
           <template #bodyCell="{ column, record }">
             <template v-if="column.key === 'createdAt'">
               {{ formatDate(record.createdAt) }}
@@ -107,12 +80,7 @@
                 <a-button type="text" size="small" @click="printInvoice(record)">
                   In lại
                 </a-button>
-                <a-popconfirm 
-                  title="Bạn chắc chắn muốn xoá?" 
-                  ok-text="Xoá" 
-                  cancel-text="Huỷ" 
-                  @confirm="() => handleDelete(record.id)"
-                >
+                <a-popconfirm title="Bạn chắc chắn muốn xoá?" ok-text="Xoá" cancel-text="Huỷ" @confirm="() => handleDelete(record.id)">
                   <a-button type="text" size="small" danger class="hover:bg-red-50 px-1">
                     Xoá
                   </a-button>
@@ -125,12 +93,7 @@
     </div>
 
     <!-- Detail Modal -->
-    <a-modal 
-      v-model:open="detailVisible" 
-      :title="'Chi tiết hóa đơn ' + selectedInvoice?.code" 
-      width="700px"
-      :footer="null"
-    >
+    <a-modal v-model:open="detailVisible" :title="'Chi tiết hóa đơn ' + selectedInvoice?.code" width="700px" :footer="null">
       <div v-if="selectedInvoice" class="space-y-4">
         <div class="flex justify-between items-center">
           <div>
@@ -149,12 +112,7 @@
 
         <div>
           <div class="font-semibold mb-2">Sản phẩm:</div>
-          <a-table 
-            :columns="detailColumns" 
-            :data-source="selectedInvoice.items" 
-            size="small"
-            :pagination="false"
-          >
+          <a-table :columns="detailColumns" :data-source="selectedInvoice.items" size="small" :pagination="false">
             <template #bodyCell="{ column, record }">
               <template v-if="column.key === 'price'">
                 {{ formatCurrency(record.price) }}
@@ -316,7 +274,7 @@ const printInvoice = async (invoice) => {
   const settingRes = await RestApi.setting.get()
   const setting = settingRes?.data?.value?.data || {}
 
-const html = `
+  const html = `
 <html>
   <head>
     <title>In hóa đơn</title>
@@ -326,7 +284,6 @@ const html = `
         margin: 0;
         font-family: monospace;
         font-size: 13px;
-        width: 80mm;
         padding: 10px;
       }
       hr {
@@ -349,22 +306,23 @@ const html = `
     <div class="text-center">Hóa Đơn: ${invoice.code}</div>
     <div class="text-center">Ngày: ${formatDateTime(invoice.createdAt)}</div>
     <hr />
-    <table style="width: 100%;">
+    <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+      
       <thead>
         <tr>
-          <td><b>Tên SP</b></td>
-          <td style="text-align:right;"><b>SL</b></td>
-          <td style="text-align:right;"><b>Đơn giá</b></td>
-          <td style="text-align:right;"><b>Thành tiền</b></td>
-        </tr>
+        <th style="text-align:left; width: 40%;">Tên SP</th>
+        <th style="text-align:right; width: 10%;">SL</th>
+        <th style="text-align:right; width: 25%;">Đơn giá</th>
+        <th style="text-align:right; width: 25%;">Thành tiền</th>
+      </tr>
       </thead>
       <tbody>
         ${invoice.items.map(i => `
           <tr>
-            <td>${i.name}</td>
-            <td style="text-align:right;">${i.quantity}</td>
-            <td style="text-align:right;">${formatCurrency(i.price)}</td>
-            <td style="text-align:right;">${formatCurrency(i.quantity * i.price)}</td>
+            <td style="word-break: break-word;">${i.name}</td>
+            <td style="text-align:right; word-break: break-word;">${i.quantity}</td>
+            <td style="text-align:right; word-break: break-word;">${formatCurrency(i.price)}</td>
+            <td style="text-align:right; word-break: break-word;">${formatCurrency(i.quantity * i.price)}</td>
           </tr>
         `).join('')}
       </tbody>
@@ -381,6 +339,7 @@ const html = `
 `;
 
 
+
   const iframe = document.getElementById('print-frame')
   const doc = iframe.contentWindow.document
   doc.open()
@@ -388,8 +347,8 @@ const html = `
   doc.close()
 }
 const exportToExcel = () => {
-  
-const rows = []
+
+  const rows = []
   invoices.value.forEach((inv, i) => {
     rows.push({
       'STT': i + 1,
