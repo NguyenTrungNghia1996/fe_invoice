@@ -3,5 +3,5 @@
 </template>
 
 <script setup>
-await navigateTo("dashboard");
+await navigateTo("create_invoices");
 </script>

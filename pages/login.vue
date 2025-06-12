@@ -61,7 +61,7 @@ const handleLogin = async () => {
       }
       await userStore.setUser(data.value.data);
       message.success("Đăng nhập thành công!");
-      navigateTo("/dashboard");
+      navigateTo("/create_invoices");
     } else {
       console.error("error:", error);
       message.error("Đăng nhập thất bại! Vui lòng kiểm tra lại thông tin");
