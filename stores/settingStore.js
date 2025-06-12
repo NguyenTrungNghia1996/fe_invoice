@@ -11,14 +11,14 @@ export const useSettingStore = defineStore(
         transparent: false,
       },
       menu: [
-        {
-          title: "Dashboard",
-          key: "dashboard",
-          url: "/dashboard",
-          bitIndex: 0,
-          icon: "ant-design:project-outlined",
-          children: [],
-        },
+        // {
+        //   title: "Dashboard",
+        //   key: "dashboard",
+        //   url: "/dashboard",
+        //   bitIndex: 0,
+        //   icon: "ant-design:project-outlined",
+        //   children: [],
+        // },
         {
           title: "Sản Phẩm",
           key: "product",
