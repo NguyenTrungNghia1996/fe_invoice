@@ -44,6 +44,14 @@ export const useSettingStore = defineStore(
           children: [],
         },
         {
+          title: "Tài Khoản",
+          key: "users",
+          url: "/users",
+          bitIndex: 0,
+          icon: "ant-design:user-outlined",
+          children: [],
+        },
+        {
           title: "Cài Đặt Cửa Hàng",
           key: "setting",
           url: "/setting",

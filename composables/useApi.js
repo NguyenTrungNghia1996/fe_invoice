@@ -5,7 +5,8 @@ let ENDPOINTS = {
   PRODUCTS: "/api/products",
   INVOICES: "/api/invoices",
   SETTINGS: "/api/settings",
-  USER:"/api/users/password"
+  USER:"/api/users/password",
+  USERS: "/api/users"
 };
 import { useUserStore } from "~~/stores/userStore";
 class Request {
@@ -154,6 +155,18 @@ class User {
   }
   async change_pasword(data) {
     return await this.request.put(ENDPOINTS.USER, data);
+  }
+  async list(data) {
+    return await this.request.get(ENDPOINTS.USERS, data);
+  }
+  async create(data) {
+    return await this.request.post(ENDPOINTS.USERS, data);
+  }
+  async update(data) {
+    return await this.request.put(ENDPOINTS.USERS, data);
+  }
+  async delete(data) {
+    return await this.request.delete(ENDPOINTS.USERS, data);
   }
 }
 class Products {
