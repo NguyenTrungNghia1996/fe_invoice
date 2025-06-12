@@ -51,23 +51,6 @@ export const useSettingStore = defineStore(
           icon: "ant-design:product-outlined",
           children: [],
         },
-        // {
-        //   title: "Quản Lý Danh Mục",
-        //   key: "category_management",
-        //   url: null,
-        //   bitIndex: 2,
-        //   icon: "ant-design:database-twotone",
-        //   children: [
-        //     {
-        //       title: "Cấp Học",
-        //       key: "school_level",
-        //       bitIndex: 0,
-        //       url: "/category_management/school_level",
-        //       icon: "ant-design:unordered-list-outlined",
-        //     },
-        //   ],
-        // },
-
       ],
     }),
     actions: {
