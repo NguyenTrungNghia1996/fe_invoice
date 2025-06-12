@@ -17,12 +17,12 @@ class Request {
         return response._data;
       },
       async onResponseError({ request, response, options }) {
-        if (response.status == 401) {
-          message.info("Phiên Đăng Nhập Kết Thúc Vui Lòng Đăng Nhập Lại! ");
-          const userStore = useUserStore();
-          userStore.logout();
-          return await navigateTo("/auth/login");
-        }
+        // if (response.status == 401) {
+        //   message.info("Phiên Đăng Nhập Kết Thúc Vui Lòng Đăng Nhập Lại! ");
+        //   const userStore = useUserStore();
+        //   userStore.logout();
+        //   return await navigateTo("/auth/login");
+        // }
 
         return response._data;
       },
