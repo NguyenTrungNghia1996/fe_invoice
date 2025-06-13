@@ -284,80 +284,100 @@ const formatDate = (val) =>
 const formatDateTime = (val) =>
   dayjs(val).format('HH:mm DD/MM/YYYY')
 
+const generatePrintableHtml = (invoice, store = {}) => {
+  const createdAt = new Date(invoice.createdAt).toLocaleString('vi-VN')
+
+  return `
+    <div style="font-family: monospace; font-size: 12px; width: 100%;">
+      ${store.logoUrl ? `<div style="text-align:center;"><img src="${store.logoUrl}" style="max-height: 60px; margin-bottom: 5px;" /></div>` : ''}
+      <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
+      ${store.address ? `<div style="text-align:center;">Địa chỉ: ${store.address}</div>` : ''}
+      ${store.phone ? `<div style="text-align:center;">Điện thoại: ${store.phone}</div>` : ''}
+      <div style="text-align:center; font-weight:bold; margin: 5px 0;">HÓA ĐƠN BÁN HÀNG</div>
+      <div style="text-align:center;">Số HĐ: <b>${invoice.code}</b></div>
+      <div style="text-align:center;">Ngày: ${createdAt}</div>
+      <hr />
+
+      <table style="width:100%; font-size:12px;">
+        <thead>
+          <tr>
+            <th style="text-align:left;">Tên SP</th>
+            <th style="text-align:right;">ĐG</th>
+            <th style="text-align:right;">SL</th>
+            <th style="text-align:right;">TT</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${invoice.items.map(item => `
+            <tr>
+              <td style="word-break: break-word;">${item.name}</td>
+              <td style="text-align:right; white-space:nowrap;">${formatCurrency(item.price)}</td>
+              <td style="text-align:right;">${item.quantity}</td>
+              <td style="text-align:right; white-space:nowrap;">${formatCurrency(item.price * item.quantity)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <hr />
+      <div style="text-align:right; font-weight:bold; white-space:nowrap;">
+        Tổng cộng: ${formatCurrency(calculateInvoiceTotal(invoice))}
+      </div>
+      ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
+      <div style="text-align:center; margin-top:10px;">Cảm ơn quý khách!</div>
+    </div>
+  `
+}
+
 const printInvoice = async (invoice) => {
   const settingRes = await RestApi.setting.get()
   const setting = settingRes?.data?.value?.data || {}
 
-  const html = `
-<html>
-  <head>
-    <title>In hóa đơn</title>
-    <style>
-      @page { margin: 0 }
-      html, body {
-        margin: 0;
-        font-family: monospace;
-        font-size: 13px;
-        padding: 10px;
-      }
-      hr {
-        border: none;
-        border-top: 1px dashed black;
-        margin: 10px 0;
-      }
-      .text-center { text-align: center }
-      .bold { font-weight: bold }
-      .row { display: flex; justify-content: space-between }
-    </style>
-  </head>
-  <body onload="window.print()">
-    ${setting.logoUrl ? `<div class="text-center"><img src="${setting.logoUrl}" style="max-width:60px;margin:4px auto;"/></div>` : ''}
-    <div class="text-center bold">${setting.storeName || 'CỬA HÀNG'}</div>
-    <div class="text-center">Địa chỉ: ${setting.address || ''}</div>
-    <div class="text-center">Điện Thoại: ${setting.phone || ''}</div>
-    <hr />
-    <div class="text-center bold">HÓA ĐƠN BÁN HÀNG</div>
-    <div class="text-center">Hóa Đơn: ${invoice.code}</div>
-    <div class="text-center">Ngày: ${formatDateTime(invoice.createdAt)}</div>
-    <hr />
-    <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-      
-      <thead>
-        <tr>
-        <th style="text-align:left; width: 40%;">Tên SP</th>
-        <th style="text-align:right; width: 10%;">SL</th>
-        <th style="text-align:right; width: 25%;">Đơn giá</th>
-        <th style="text-align:right; width: 25%;">Thành tiền</th>
-      </tr>
-      </thead>
-      <tbody>
-        ${invoice.items.map(i => `
-          <tr>
-            <td style="word-break: break-word;">${i.name}</td>
-            <td style="text-align:right; word-break: break-word;">${i.quantity}</td>
-            <td style="text-align:right; word-break: break-word;">${formatCurrency(i.price)}</td>
-            <td style="text-align:right; word-break: break-word;">${formatCurrency(i.quantity * i.price)}</td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-    <hr />
-    <div class="row bold">
-      <span>Tổng thanh toán:</span>
-      <span>${formatCurrency(calculateInvoiceTotal(invoice))}</span>
-    </div>
-    ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
-    <div class="text-center" style="margin-top:10px;">Cảm ơn quý khách!</div>
-  </body>
-</html>
-`;
-
-
+  const html = generatePrintableHtml(invoice, setting)
 
   const iframe = document.getElementById('print-frame')
   const doc = iframe.contentWindow.document
   doc.open()
-  doc.write(html)
+  doc.write(`
+  <html>
+    <head>
+      <title>Hóa đơn</title>
+      <style>
+        @page { margin: 0 }
+        body {
+          font-family: monospace;
+          font-size: 13px;
+          padding: 10px;
+          margin: 0;
+        }
+        hr {
+          border: none;
+          border-top: 1px dashed black;
+          margin: 10px 0;
+        }
+        .text-center { text-align: center }
+        .bold { font-weight: bold }
+        .row { display: flex; justify-content: space-between }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          table-layout: fixed;
+        }
+        th, td {
+          word-break: break-word;
+          padding: 2px 0;
+        }
+        th:nth-child(1), td:nth-child(1) { width: 40%; text-align: left; }
+        th:nth-child(2), td:nth-child(2) { width: 20%; text-align: right; }
+        th:nth-child(3), td:nth-child(3) { width: 15%; text-align: right; }
+        th:nth-child(4), td:nth-child(4) { width: 25%; text-align: right; }
+      </style>
+    </head>
+    <body onload="window.print()">
+      ${html}
+    </body>
+  </html>
+  `)
   doc.close()
 }
 const exportToExcel = () => {
