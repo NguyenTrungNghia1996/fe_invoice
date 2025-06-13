@@ -221,8 +221,15 @@ const formatCurrency = (val) => {
     currency: 'VND'
   }).format(val)
 }
+watch(selectedProduct, (val, oldVal) => {
+  if (val && val !== oldVal) {
+    handleAddProduct()
+  }
+})
 
 fetchProducts()
+
+
 </script>
 
 <template>
