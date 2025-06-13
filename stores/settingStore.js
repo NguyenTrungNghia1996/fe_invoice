@@ -24,7 +24,7 @@ export const useSettingStore = defineStore(
           key: "product",
           url: "/product",
           bitIndex: 0,
-          icon: "ant-design:product-outlined",
+          icon: "ant-design:shop-outlined",
           children: [],
         },
         {
@@ -32,7 +32,7 @@ export const useSettingStore = defineStore(
           key: "invoices",
           url: "/invoices",
           bitIndex: 0,
-          icon: "ant-design:product-outlined",
+          icon: "ant-design:file-text-outlined",
           children: [],
         },
         {
@@ -40,7 +40,7 @@ export const useSettingStore = defineStore(
           key: "create_invoices",
           url: "/create_invoices",
           bitIndex: 0,
-          icon: "ant-design:product-outlined",
+          icon: "ant-design:file-add-outlined",
           children: [],
         },
         {
@@ -48,7 +48,7 @@ export const useSettingStore = defineStore(
           key: "setting",
           url: "/setting",
           bitIndex: 0,
-          icon: "ant-design:product-outlined",
+          icon: "ant-design:setting-outlined",
           children: [],
         },
       ],

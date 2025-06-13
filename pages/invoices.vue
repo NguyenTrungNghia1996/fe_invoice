@@ -16,11 +16,18 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <a-popconfirm title="Bạn chắc chắn muốn xoá các hóa đơn đã chọn?" ok-text="Xoá" cancel-text="Huỷ" @confirm="handleDeleteSelected" :disabled="!selectedRowKeys.length">
-              <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">
-                Xoá đã chọn ({{ selectedRowKeys.length }})
-              </a-button>
-            </a-popconfirm>
+          <a-popconfirm
+            v-if="userStore.role !== 'user'"
+            title="Bạn chắc chắn muốn xoá các hóa đơn đã chọn?"
+            ok-text="Xoá"
+            cancel-text="Huỷ"
+            @confirm="handleDeleteSelected"
+            :disabled="!selectedRowKeys.length"
+          >
+            <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">
+              Xoá đã chọn ({{ selectedRowKeys.length }})
+            </a-button>
+          </a-popconfirm>
             <a-button type="primary" @click="exportToExcel">Xuất excel</a-button>
           </div>
         </div>
@@ -80,7 +87,13 @@
                 <a-button type="text" size="small" @click="printInvoice(record)">
                   In lại
                 </a-button>
-                <a-popconfirm title="Bạn chắc chắn muốn xoá?" ok-text="Xoá" cancel-text="Huỷ" @confirm="() => handleDelete(record.id)">
+                <a-popconfirm
+                  v-if="userStore.role !== 'user'"
+                  title="Bạn chắc chắn muốn xoá?"
+                  ok-text="Xoá"
+                  cancel-text="Huỷ"
+                  @confirm="() => handleDelete(record.id)"
+                >
                   <a-button type="text" size="small" danger class="hover:bg-red-50 px-1">
                     Xoá
                   </a-button>
@@ -138,6 +151,7 @@
 import * as XLSX from 'xlsx'
 import dayjs from 'dayjs'
 const { RestApi } = useApi()
+const userStore = useUserStore()
 
 const param = ref({
   page: 1,
