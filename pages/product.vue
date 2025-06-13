@@ -12,11 +12,17 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
           <a-input-search v-model:value="search_text" placeholder="Tìm kiếm sản phẩm..." enter-button allow-clear class="w-full md:w-80" @search="onSearch" />
           <div class="flex items-center gap-2">
-            <a-popconfirm title="Bạn chắc chắn muốn xoá?" ok-text="Xoá" cancel-text="Huỷ" @confirm="handleDelete">
-              <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">
-                Xoá đã chọn
-              </a-button>
-            </a-popconfirm>
+          <a-popconfirm
+            v-if="userStore.role === 'admin'"
+            title="Bạn chắc chắn muốn xoá?"
+            ok-text="Xoá"
+            cancel-text="Huỷ"
+            @confirm="handleDelete"
+          >
+            <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">
+              Xoá đã chọn
+            </a-button>
+          </a-popconfirm>
             <a-button type="primary" @click="openAddModal" class="flex items-center gap-1">
               Thêm sản phẩm
             </a-button>
@@ -38,7 +44,13 @@
                   Sửa
                 </a-button>
 
-                <a-popconfirm title="Bạn chắc chắn muốn xoá?" ok-text="Xoá" cancel-text="Huỷ" @confirm="() => handleDeleteOne(record.id)">
+                <a-popconfirm
+                  v-if="userStore.role === 'admin'"
+                  title="Bạn chắc chắn muốn xoá?"
+                  ok-text="Xoá"
+                  cancel-text="Huỷ"
+                  @confirm="() => handleDeleteOne(record.id)"
+                >
                   <a-button type="text" size="small" danger class="hover:bg-red-50 px-1">
                     Xoá
                   </a-button>
@@ -74,6 +86,7 @@
 
 <script setup>
 const { RestApi } = useApi()
+const userStore = useUserStore()
 // State
 const param = ref({ page: 1, limit: 10, search: '' })
 const search_text = ref("")

@@ -21,7 +21,7 @@ export const useUserStore = defineStore(
         return state.user?.item?.hoten || null;
       },
       role: state => {
-        return state.user?.item?.username || null;
+        return state.user?.role || null;
       },
     },
     persist: {
