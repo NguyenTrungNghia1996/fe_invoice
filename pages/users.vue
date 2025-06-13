@@ -10,13 +10,7 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
           <a-input-search v-model:value="search_text" placeholder="Tìm kiếm..." enter-button allow-clear class="w-full md:w-80" @search="onSearch" />
           <div class="flex items-center gap-2">
-            <a-popconfirm
-              v-if="userStore.role === 'admin'"
-              title="Bạn chắc chắn muốn xoá?"
-              ok-text="Xoá"
-              cancel-text="Huỷ"
-              @confirm="handleDelete"
-            >
+            <a-popconfirm v-if="userStore.role === 'admin'" title="Bạn chắc chắn muốn xoá?" ok-text="Xoá" cancel-text="Huỷ" @confirm="handleDelete">
               <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">Xoá đã chọn</a-button>
             </a-popconfirm>
             <a-button v-if="userStore.role === 'admin'" type="primary" @click="openAddModal" class="flex items-center gap-1">Thêm người dùng</a-button>
@@ -25,28 +19,12 @@
       </div>
 
       <div class="bg-white">
-        <a-table
-          :columns="columns"
-          :data-source="users"
-          :loading="loading"
-          :pagination="pagination"
-          :row-selection="{ selectedRowKeys, onChange: onSelectChange }"
-          row-key="id"
-          size="small"
-          @change="handleTableChange"
-          bordered
-        >
+        <a-table :columns="columns" :data-source="users" :loading="loading" :pagination="pagination" :row-selection="{ selectedRowKeys, onChange: onSelectChange }" row-key="id" size="small" @change="handleTableChange" bordered>
           <template #bodyCell="{ column, record }">
             <template v-if="column.key === 'actions'">
               <div class="flex gap-1">
                 <a-button type="text" size="small" @click="openEditModal(record)">Sửa</a-button>
-                <a-popconfirm
-                  v-if="userStore.role === 'admin'"
-                  title="Bạn chắc chắn muốn xoá?"
-                  ok-text="Xoá"
-                  cancel-text="Huỷ"
-                  @confirm="() => handleDeleteOne(record.id)"
-                >
+                <a-popconfirm v-if="userStore.role === 'admin'" title="Bạn chắc chắn muốn xoá?" ok-text="Xoá" cancel-text="Huỷ" @confirm="() => handleDeleteOne(record.id)">
                   <a-button type="text" size="small" danger class="hover:bg-red-50 px-1">Xoá</a-button>
                 </a-popconfirm>
               </div>
@@ -56,19 +34,19 @@
       </div>
     </div>
 
-    <a-modal v-model:visible="modalVisible" :title="editingUser ? 'Sửa người dùng' : 'Thêm người dùng mới'" @ok="submitForm" @cancel="resetForm" :confirm-loading="modalLoading" width="500px" :destroy-on-close="true">
+    <a-modal v-model:open="modalVisible" :title="editingUser ? 'Sửa người dùng' : 'Thêm người dùng mới'" @ok="submitForm" @cancel="resetForm" :confirm-loading="modalLoading" width="500px" :destroy-on-close="true">
       <a-form layout="vertical" :model="form">
         <a-form-item label="Tên đăng nhập" name="username" :rules="[{ required: true, message: 'Vui lòng nhập tên đăng nhập' }]">
           <a-input v-model:value="form.username" placeholder="Nhập tên đăng nhập" />
         </a-form-item>
-        <a-form-item label="Họ tên" name="hoten" :rules="[{ required: true, message: 'Vui lòng nhập họ tên' }]">
-          <a-input v-model:value="form.hoten" placeholder="Nhập họ tên" />
-        </a-form-item>
         <a-form-item v-if="!editingUser" label="Mật khẩu" name="password" :rules="[{ required: true, message: 'Vui lòng nhập mật khẩu' }]">
           <a-input-password v-model:value="form.password" placeholder="Nhập mật khẩu" />
         </a-form-item>
-        <a-form-item label="Role" name="role" :rules="[{ required: true, message: 'Vui lòng nhập role' }]">
-          <a-input v-model:value="form.role" placeholder="admin hoặc user" />
+        <a-form-item label="Role" name="role" :rules="[{ required: true, message: 'Vui lòng chọn role' }]">
+          <a-select v-model:value="form.role" placeholder="Chọn quyền">
+            <a-select-option value="admin">admin</a-select-option>
+            <a-select-option value="user">user</a-select-option>
+          </a-select>
         </a-form-item>
       </a-form>
       <template #footer>
@@ -78,7 +56,6 @@
     </a-modal>
   </div>
 </template>
-
 <script setup>
 const { RestApi } = useApi()
 const userStore = useUserStore()
@@ -96,11 +73,10 @@ const selectedRowKeys = ref([])
 
 const modalVisible = ref(false)
 const editingUser = ref(null)
-const form = ref({ username: '', hoten: '', password: '', role: '' })
+const form = ref({ username: '', password: '', role: '' })
 
 const columns = [
   { title: 'Tên đăng nhập', dataIndex: 'username', key: 'username', ellipsis: true },
-  { title: 'Họ tên', dataIndex: 'hoten', key: 'hoten', ellipsis: true },
   { title: 'Role', dataIndex: 'role', key: 'role', width: '120px', align: 'center' },
   { title: 'Hành động', key: 'actions', width: '120px', align: 'center' }
 ]
@@ -118,9 +94,8 @@ const pagination = computed(() => ({
 const fetchUsers = async (paramSource) => {
   loading.value = true
   try {
-    const { data } = await RestApi.users.list({ params: paramSource })
-    users.value = data.value?.data?.users || []
-    total.value = data.value?.data?.total || 0
+    const { data } = await RestApi.users.list()
+    users.value = data.value?.data || []
   } finally {
     loading.value = false
   }
@@ -144,13 +119,17 @@ const onSelectChange = keys => {
 
 const openAddModal = () => {
   editingUser.value = null
-  form.value = { username: '', hoten: '', password: '', role: '' }
+  form.value = { username: '', password: '', role: '' }
   modalVisible.value = true
 }
 
 const openEditModal = (record) => {
   editingUser.value = record
-  form.value = { id: record.id, username: record.username, hoten: record.hoten, role: record.role }
+  form.value = {
+    id: record.id,
+    username: record.username,
+    role: record.role
+  }
   modalVisible.value = true
 }
 
@@ -221,10 +200,9 @@ const handleDeleteOne = async (id) => {
 
 const resetForm = () => {
   modalVisible.value = false
-  form.value = { username: '', hoten: '', password: '', role: '' }
+  form.value = { username: '', password: '', role: '' }
   editingUser.value = null
 }
 
 await fetchUsers({ ...param.value })
 </script>
-
