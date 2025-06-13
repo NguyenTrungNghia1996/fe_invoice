@@ -13,7 +13,7 @@
           <a-input-search v-model:value="search_text" placeholder="Tìm kiếm sản phẩm..." enter-button allow-clear class="w-full md:w-80" @search="onSearch" />
           <div class="flex items-center gap-2">
           <a-popconfirm
-            v-if="userStore.role !== 'user'"
+            v-if="userStore.role === 'admin'"
             title="Bạn chắc chắn muốn xoá?"
             ok-text="Xoá"
             cancel-text="Huỷ"
@@ -45,7 +45,7 @@
                 </a-button>
 
                 <a-popconfirm
-                  v-if="userStore.role !== 'user'"
+                  v-if="userStore.role === 'admin'"
                   title="Bạn chắc chắn muốn xoá?"
                   ok-text="Xoá"
                   cancel-text="Huỷ"

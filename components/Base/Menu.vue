@@ -44,6 +44,7 @@
 
 <script setup>
 const settingStore = useSettingStore();
+const userStore = useUserStore();
 import { useRouter } from "vue-router";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
@@ -65,8 +66,16 @@ watch(isMediumAndUp, () => {
 watch(isLargeAndUp, () => {
   if (isLargeAndUp.value && collapsed.value) collapsed.value = false;
 });
+const filterByRole = items => {
+  return items
+    .filter(i => !i.adminOnly || userStore.role === 'admin')
+    .map(i => ({
+      ...i,
+      children: i.children ? filterByRole(i.children) : [],
+    }));
+};
 const formattedMenu = computed(() => {
-  return settingStore.menuItems;
+  return filterByRole(settingStore.menuItems);
 });
 // Filter menu based on search query
 const filteredMenuList = computed(() => {
