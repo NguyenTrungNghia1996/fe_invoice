@@ -176,50 +176,55 @@ const generatePrintableHtml = (invoice, store = {}) => {
   const createdAt = new Date(invoice.createdAt).toLocaleString('vi-VN')
 
 return `
-  ${store.logoUrl ? `<div style="text-align:center;"><img src="${store.logoUrl}" style="max-height: 80px; margin-bottom: 10px;" /></div>` : ''}
-  <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
-  ${store.address ? `<div style="text-align:center;">Địa chỉ: ${store.address}</div>` : ''}
-  ${store.phone ? `<div style="text-align:center;">Điện thoại: ${store.phone}</div>` : ''}
-  <hr />
-  <div style="text-align:center; font-weight:bold;">HÓA ĐƠN BÁN HÀNG</div>
-  <div style="text-align:center;">Số HĐ: <b>${invoice.code}</b></div>
-  <div style="text-align:center;">Ngày ${createdAt}</div>
-  <hr />
-  <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-    <thead>
-      <tr>
-        <th style="text-align:left; width: 40%;">Tên SP</th>
-        <th style="text-align:right; width: 20%;">Đơn giá</th>
-        <th style="text-align:right; width: 15%;">SL</th>
-        <th style="text-align:right; width: 25%;">Thành tiền</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${invoice.items.map(item => `
-        <tr>
-          <td style="word-break: break-word;">${item.name}</td>
-          <td style="text-align:right;">${formatCurrency(item.price)}</td>
-          <td style="text-align:right;">${item.quantity}</td>
-          <td style="text-align:right;">${formatCurrency(item.price * item.quantity)}</td>
-        </tr>
-      `).join('')}
-    </tbody>
-  </table>
-  <hr />
-  <div style="display: flex; justify-content: space-between; font-weight: bold;">
-    <span>Tổng thanh toán:</span>
-    <span>${formatCurrency(calculateTotal(invoice.items))}</span>
-  </div>
-  ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
-  <div style="text-align:center; margin-top:10px;">Cảm ơn quý khách!</div>
-`
+    <div style="font-family: monospace; font-size: 12px; width: 100%;">
+      ${store.logoUrl ? `<div style="text-align:center;"><img src="${store.logoUrl}" style="max-height: 60px; margin-bottom: 5px;" /></div>` : ''}
+      <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
+      ${store.address ? `<div style="text-align:center;">Địa chỉ: ${store.address}</div>` : ''}
+      ${store.phone ? `<div style="text-align:center;">Điện thoại: ${store.phone}</div>` : ''}
+      <div style="text-align:center; font-weight:bold; margin: 5px 0;">HÓA ĐƠN BÁN HÀNG</div>
+      <div style="text-align:center;">Số HĐ: <b>${invoice.code}</b></div>
+      <div style="text-align:center;">Ngày: ${createdAt}</div>
+      <hr />
+
+      <table style="width:100%; font-size:12px;">
+        <thead>
+          <tr>
+            <th style="text-align:left;">Tên SP</th>
+            <th style="text-align:right;">ĐG</th>
+            <th style="text-align:right;">SL</th>
+            <th style="text-align:right;">TT</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${invoice.items.map(item => `
+            <tr>
+              <td style="word-break: break-word;">${item.name}</td>
+              <td style="text-align:right; white-space:nowrap;">${formatCurrency(item.price)}</td>
+              <td style="text-align:right;">${item.quantity}</td>
+              <td style="text-align:right; white-space:nowrap;">${formatCurrency(item.price * item.quantity)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <hr />
+      <div style="text-align:right; font-weight:bold; white-space:nowrap;">
+        Tổng cộng: ${formatCurrency(calculateTotal(invoice.items))}
+      </div>
+      ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
+      <div style="text-align:center; margin-top:10px;">Cảm ơn quý khách!</div>
+    </div>
+  `;
 }
 
 const formatCurrency = (val) => {
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
-    currency: 'VND'
-  }).format(val)
+    currency: 'VND',
+    currencyDisplay: 'narrowSymbol' // sẽ là ₫
+  })
+  .format(val)
+  .replace(/[₫\s]/g, ''); // xóa ₫ và khoảng trắng
 }
 watch(selectedProduct, (val, oldVal) => {
   if (val && val !== oldVal) {
