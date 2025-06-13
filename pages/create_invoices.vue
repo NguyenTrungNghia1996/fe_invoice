@@ -221,8 +221,15 @@ const formatCurrency = (val) => {
     currency: 'VND'
   }).format(val)
 }
+watch(selectedProduct, (val, oldVal) => {
+  if (val && val !== oldVal) {
+    handleAddProduct()
+  }
+})
 
 fetchProducts()
+
+
 </script>
 
 <template>
@@ -245,7 +252,7 @@ fetchProducts()
               style="width: 100%"
               @keydown.enter.prevent="handleAddProduct"
             />
-            <a-button type="primary" @click="handleAddProduct" :disabled="!selectedProduct">Thêm</a-button>
+            <!-- <a-button type="primary" @click="handleAddProduct" :disabled="!selectedProduct">Thêm</a-button> -->
           </div>
         </a-form-item>
 
