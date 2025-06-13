@@ -186,7 +186,7 @@ return `
       <div style="text-align:center;">Ngày: ${createdAt}</div>
       <hr />
 
-      <table style="width:100%; font-size:12px;">
+      <table style="width:100%; font-size:14px;">
         <thead>
           <tr>
             <th style="text-align:left;">Tên SP</th>
@@ -212,7 +212,7 @@ return `
         Tổng cộng: ${formatCurrency(calculateTotal(invoice.items))}
       </div>
       ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
-      <div style="text-align:center; margin-top:10px;">Cảm ơn quý khách!</div>
+      <div style="text-align:center; margin-top:10px; font-size:14px;">Cảm ơn quý khách!</div>
     </div>
   `;
 }
