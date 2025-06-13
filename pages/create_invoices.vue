@@ -245,7 +245,7 @@ fetchProducts()
               style="width: 100%"
               @keydown.enter.prevent="handleAddProduct"
             />
-            <a-button type="primary" @click="handleAddProduct" :disabled="!selectedProduct">Thêm</a-button>
+            <!-- <a-button type="primary" @click="handleAddProduct" :disabled="!selectedProduct">Thêm</a-button> -->
           </div>
         </a-form-item>
 
