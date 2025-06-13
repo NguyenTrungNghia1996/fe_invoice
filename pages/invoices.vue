@@ -16,18 +16,11 @@
           </div>
 
           <div class="flex items-center gap-2">
-          <a-popconfirm
-            v-if="userStore.role === 'admin'"
-            title="Bạn chắc chắn muốn xoá các hóa đơn đã chọn?"
-            ok-text="Xoá"
-            cancel-text="Huỷ"
-            @confirm="handleDeleteSelected"
-            :disabled="!selectedRowKeys.length"
-          >
-            <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">
-              Xoá đã chọn ({{ selectedRowKeys.length }})
-            </a-button>
-          </a-popconfirm>
+            <a-popconfirm v-if="userStore.role === 'admin'" title="Bạn chắc chắn muốn xoá các hóa đơn đã chọn?" ok-text="Xoá" cancel-text="Huỷ" @confirm="handleDeleteSelected" :disabled="!selectedRowKeys.length">
+              <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">
+                Xoá đã chọn ({{ selectedRowKeys.length }})
+              </a-button>
+            </a-popconfirm>
             <a-button type="primary" @click="exportToExcel">Xuất excel</a-button>
           </div>
         </div>
@@ -87,13 +80,7 @@
                 <a-button type="text" size="small" @click="printInvoice(record)">
                   In lại
                 </a-button>
-                <a-popconfirm
-                  v-if="userStore.role === 'admin'"
-                  title="Bạn chắc chắn muốn xoá?"
-                  ok-text="Xoá"
-                  cancel-text="Huỷ"
-                  @confirm="() => handleDelete(record.id)"
-                >
+                <a-popconfirm v-if="userStore.role === 'admin'" title="Bạn chắc chắn muốn xoá?" ok-text="Xoá" cancel-text="Huỷ" @confirm="() => handleDelete(record.id)">
                   <a-button type="text" size="small" danger class="hover:bg-red-50 px-1">
                     Xoá
                   </a-button>
@@ -281,8 +268,8 @@ const formatCurrency = (val) => {
     currency: 'VND',
     currencyDisplay: 'narrowSymbol' // sẽ là ₫
   })
-  .format(val)
-  .replace(/[₫\s]/g, ''); // xóa ₫ và khoảng trắng
+    .format(val)
+    .replace(/[₫\s]/g, ''); // xóa ₫ và khoảng trắng
 }
 const formatDate = (val) =>
   dayjs(val).format('DD/MM/YYYY')
@@ -294,45 +281,54 @@ const generatePrintableHtml = (invoice, store = {}) => {
   const createdAt = new Date(invoice.createdAt).toLocaleString('vi-VN')
 
   return `
-    <div style="font-family: monospace; font-size: 12px; width: 100%;">
-      ${store.logoUrl ? `<div style="text-align:center;"><img src="${store.logoUrl}" style="max-height: 60px; margin-bottom: 5px;" /></div>` : ''}
-      <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
-      ${store.address ? `<div style="text-align:center;">Địa chỉ: ${store.address}</div>` : ''}
-      ${store.phone ? `<div style="text-align:center;">Điện thoại: ${store.phone}</div>` : ''}
-      <div style="text-align:center; font-weight:bold; margin: 5px 0;">HÓA ĐƠN BÁN HÀNG</div>
-      <div style="text-align:center;">Số HĐ: <b>${invoice.code}</b></div>
-      <div style="text-align:center;">Ngày: ${createdAt}</div>
-      <hr />
-
-      <table style="width:100%; font-size:12px;">
-        <thead>
+  <div style="font-family: monospace; font-size: 16px; width: 100%;">
+    ${store.logoUrl ? `<div style="text-align:center;"><img src="${store.logoUrl}" style="max-height: 60px; margin-bottom: 5px;" /></div>` : ''}
+    <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
+    ${store.address ? `<div style="text-align:center;">Địa chỉ: ${store.address}</div>` : ''}
+    ${store.phone ? `<div style="text-align:center;">Điện thoại: ${store.phone}</div>` : ''}
+    <hr/>
+    <div style="text-align:center; font-weight:bold; margin: 5px 0;">HÓA ĐƠN BÁN HÀNG</div>
+    <div style="text-align:center;">Số HĐ: <b>${invoice.code}</b></div>
+    <div style="text-align:center;">Ngày: ${createdAt}</div>
+  <table style="width:100%; font-size:16px;">
+      <thead>
+        <tr>
+          <td colspan="4"><hr style="border: none; border-top: 1px solid #000; margin: 4px 0;" /></td>
+        </tr>
+        <tr>
+          <th style="text-align:left;">Tên SP</th>
+          <th style="text-align:right;">ĐG</th>
+          <th style="text-align:right;">SL</th>
+          <th style="text-align:right;">TT</th>
+        </tr>
+        <tr>
+          <td colspan="4"><hr style="border: none; border-top: 1px solid #000; margin: 4px 0;" /></td>
+        </tr>
+      </thead>
+      <tbody>
+        ${invoice.items.map((item, index) => `
           <tr>
-            <th style="text-align:left;">Tên SP</th>
-            <th style="text-align:right;">ĐG</th>
-            <th style="text-align:right;">SL</th>
-            <th style="text-align:right;">TT</th>
+            <td style="word-break: break-word;">${item.name}</td>
+            <td style="text-align:right; white-space:nowrap;">${formatCurrency(item.price)}</td>
+            <td style="text-align:right;">${item.quantity}</td>
+            <td style="text-align:right; white-space:nowrap;">${formatCurrency(item.price * item.quantity)}</td>
           </tr>
-        </thead>
-        <tbody>
-          ${invoice.items.map(item => `
-            <tr>
-              <td style="word-break: break-word;">${item.name}</td>
-              <td style="text-align:right; white-space:nowrap;">${formatCurrency(item.price)}</td>
-              <td style="text-align:right;">${item.quantity}</td>
-              <td style="text-align:right; white-space:nowrap;">${formatCurrency(item.price * item.quantity)}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
+          ${index < invoice.items.length - 1 ? `
+            <tr><td colspan="4"><hr style="border: none; border-top: 1px dashed #000; margin: 2px 0;" /></td></tr>
+          ` : ''}
+        `).join('')}
+      </tbody>
+    </table>
 
-      <hr />
-      <div style="text-align:right; font-weight:bold; white-space:nowrap;">
-        Tổng cộng: ${formatCurrency(calculateInvoiceTotal(invoice))}
-      </div>
-      ${invoice.note ? `<div>Ghi chú: ${invoice.note}</div>` : ''}
-      <div style="text-align:center; margin-top:10px;">Cảm ơn quý khách!</div>
+    <hr />
+    <div style="text-align:right; font-weight:bold; white-space:nowrap; font-size:16px;">
+      Tổng cộng: ${formatCurrency(calculateInvoiceTotal(invoice))}
     </div>
-  `
+    ${invoice.note ? `<div style="font-size:16px;">Ghi chú: ${invoice.note}</div>` : ''}
+    <div style="font-weight:bold; white-space:nowrap;text-align:center; margin-top:10px; font-size:16px;">Cảm ơn quý khách!</div>
+  </div>
+`;
+
 }
 
 const printInvoice = async (invoice) => {
