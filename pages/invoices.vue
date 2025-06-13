@@ -275,9 +275,15 @@ const handleDeleteSelected = async () => {
   }
 }
 
-const formatCurrency = (value) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
-
+const formatCurrency = (val) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    currencyDisplay: 'narrowSymbol' // sẽ là ₫
+  })
+  .format(val)
+  .replace(/[₫\s]/g, ''); // xóa ₫ và khoảng trắng
+}
 const formatDate = (val) =>
   dayjs(val).format('DD/MM/YYYY')
 
