@@ -40,11 +40,13 @@
                 <span>Hồ sơ cá nhân</span>
               </div>
             </a-menu-item> -->
-            <!-- <a-menu-item key="change_password" class="hover:bg-gray-700/50 !px-4 !py-2.5 !mx-0 text-gray-200 hover:text-white" @click="showChangePasswordModal">
+            <a-menu-item key="change_password" class="hover:bg-gray-700/50 !px-4 !py-2.5 !mx-0 text-gray-200 hover:text-white" @click="showChangePasswordModal">
               <div class="flex items-center gap-2">
                 <KeyOutlined class="text-blue-400" />
+                <span>Đổi mật khẩu</span>
               </div>
-            </a-menu-item> -->
+              
+            </a-menu-item>
             <a-menu-item key="logout" class="hover:bg-gray-700/50 !px-4 !py-2.5 !mx-0 text-gray-200 hover:text-white" @click="signOut">
               <div class="flex items-center gap-2">
                 <LogoutOutlined class="text-red-400" />

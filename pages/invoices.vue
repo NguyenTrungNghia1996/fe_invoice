@@ -17,7 +17,7 @@
 
           <div class="flex items-center gap-2">
           <a-popconfirm
-            v-if="userStore.role !== 'user'"
+            v-if="userStore.role === 'admin'"
             title="Bạn chắc chắn muốn xoá các hóa đơn đã chọn?"
             ok-text="Xoá"
             cancel-text="Huỷ"
@@ -88,7 +88,7 @@
                   In lại
                 </a-button>
                 <a-popconfirm
-                  v-if="userStore.role !== 'user'"
+                  v-if="userStore.role === 'admin'"
                   title="Bạn chắc chắn muốn xoá?"
                   ok-text="Xoá"
                   cancel-text="Huỷ"

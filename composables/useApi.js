@@ -5,7 +5,9 @@ let ENDPOINTS = {
   PRODUCTS: "/api/products",
   INVOICES: "/api/invoices",
   SETTINGS: "/api/settings",
-  USER:"/api/users/password"
+  USERS: "/api/users",
+  USERS_PERSON: "/api/users/person",
+  USERS_PASSWORD: "/api/users/password"
 };
 import { useUserStore } from "~~/stores/userStore";
 class Request {
@@ -97,6 +99,7 @@ class RestApi {
   constructor() {
     this.request = new Request();
     this.user = new User(this.request);
+    this.users = new Users(this.request);
     this.products = new Products(this.request);
     this.invoices = new Invoices(this.request);
     this.setting = new Setting(this.request);
@@ -153,7 +156,31 @@ class User {
     return await this.request.post(ENDPOINTS.LOGIN, data);
   }
   async change_pasword(data) {
-    return await this.request.put(ENDPOINTS.USER, data);
+    return await this.request.put(ENDPOINTS.USERS_PASSWORD, data);
+  }
+}
+
+class Users {
+  constructor() {
+    this.request = new Request();
+  }
+  async list(data) {
+    return await this.request.get(ENDPOINTS.USERS, data);
+  }
+  async create(data) {
+    return await this.request.post(ENDPOINTS.USERS, data);
+  }
+  async update(data) {
+    return await this.request.put(ENDPOINTS.USERS, data);
+  }
+  async updatePerson(data) {
+    return await this.request.put(ENDPOINTS.USERS_PERSON, data);
+  }
+  async changePassword(data) {
+    return await this.request.put(ENDPOINTS.USERS_PASSWORD, data);
+  }
+  async delete(data) {
+    return await this.request.delete(ENDPOINTS.USERS, data);
   }
 }
 class Products {
