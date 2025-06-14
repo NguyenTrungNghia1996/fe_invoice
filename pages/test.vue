@@ -221,10 +221,10 @@ const detailColumns = [
 
 const pagination = computed(() => ({
   current: param.value.page,
-  pageSize: param.value.limit,
+  pageSize: param.value.limit === 0 ? summary.value.totalInvoices : param.value.limit,
   total: summary.value.totalInvoices,
   showSizeChanger: true,
-  pageSizeOptions: ['10', '20', '50', '100'],
+  pageSizeOptions: ['10', '20', '50', '100', '0'],
   showTotal: (total) => `Tổng ${total} hóa đơn`,
   size: 'small'
 }))

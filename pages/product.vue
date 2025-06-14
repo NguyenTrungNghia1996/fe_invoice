@@ -127,10 +127,10 @@ const columns = [
 // Computed
 const pagination = computed(() => ({
   current: param.value.page,
-  pageSize: param.value.limit,
+  pageSize: param.value.limit === 0 ? total.value : param.value.limit,
   total: total.value,
   showSizeChanger: true,
-  pageSizeOptions: ['1', '10', '20', '50', '100'],
+  pageSizeOptions: ['1', '10', '20', '50', '100', '0'],
   showTotal: (total) => `Tổng ${total} sản phẩm`,
   size: 'small'
 }))

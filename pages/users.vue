@@ -83,10 +83,10 @@ const columns = [
 
 const pagination = computed(() => ({
   current: param.value.page,
-  pageSize: param.value.limit,
+  pageSize: param.value.limit === 0 ? total.value : param.value.limit,
   total: total.value,
   showSizeChanger: true,
-  pageSizeOptions: ['10', '20', '50', '100'],
+  pageSizeOptions: ['10', '20', '50', '100', '0'],
   showTotal: t => `Tổng ${t} người dùng`,
   size: 'small'
 }))
