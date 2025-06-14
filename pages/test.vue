@@ -177,7 +177,6 @@
 </template>
 
 <script setup>
-import * as XLSX from 'xlsx'
 import dayjs from 'dayjs'
 const { RestApi } = useApi()
 
@@ -391,9 +390,12 @@ const html = `
   doc.write(html)
   doc.close()
 }
-const exportToExcel = () => {
+const exportToExcel = async () => {
+  const mod = await import('xlsx')
+  const XLSX = mod.default || mod
   
-const rows = []
+
+  const rows = []
   invoices.value.forEach((inv, i) => {
     rows.push({
       'STT': i + 1,

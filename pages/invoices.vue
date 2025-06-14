@@ -135,7 +135,6 @@
 </template>
 
 <script setup>
-import * as XLSX from 'xlsx'
 import dayjs from 'dayjs'
 const { RestApi } = useApi()
 const userStore = useUserStore()
@@ -382,7 +381,9 @@ const printInvoice = async (invoice) => {
   `)
   doc.close()
 }
-const exportToExcel = () => {
+const exportToExcel = async () => {
+  const mod = await import('xlsx')
+  const XLSX = mod.default || mod
 
   const rows = []
   invoices.value.forEach((inv, i) => {
