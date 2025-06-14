@@ -183,16 +183,15 @@ const pagination = computed(() => ({
   pageSize: param.value.limit,
   total: summary.value.totalInvoices,
   showSizeChanger: true,
-  pageSizeOptions: ['10', '20', '50', '100'],
+  pageSizeOptions: ['1', '10', '20', '50', '100'],
   showTotal: (total) => `Tổng ${total} hóa đơn`,
   size: 'small'
 }))
 
-const fetchInvoices = async (paramSource = null) => {
+const fetchInvoices = async (paramSource) => {
   loading.value = true
   try {
-    const params = paramSource || param.value
-    const { data } = await RestApi.invoices.list({ params })
+    const { data } = await RestApi.invoices.list({ params: paramSource })
     invoices.value = data.value?.data?.invoices || []
     summary.value = {
       totalInvoices: data.value?.data?.total || 0,
@@ -207,7 +206,7 @@ const fetchInvoices = async (paramSource = null) => {
 
 const handleTableChange = async (pager) => {
   param.value.page = pager.current
-  param.value.limit = pager.pageSize
+  param.value.limit = pager.pageSize == 1 ? summary.value.totalInvoices : pager.pageSize
   await fetchInvoices({ ...param.value })
 }
 
