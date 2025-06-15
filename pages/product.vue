@@ -23,9 +23,12 @@
               Xoá đã chọn
             </a-button>
           </a-popconfirm>
-            <a-button type="primary" @click="openAddModal" class="flex items-center gap-1">
-              Thêm sản phẩm
-            </a-button>
+          <input type="file" accept="application/json" ref="productFile" class="hidden" @change="importProducts" />
+          <a-button @click="triggerProductImport">Nhập</a-button>
+          <a-button @click="exportProducts">Xuất</a-button>
+          <a-button type="primary" @click="openAddModal" class="flex items-center gap-1">
+            Thêm sản phẩm
+          </a-button>
           </div>
         </div>
       </div>
@@ -95,6 +98,7 @@ const total = ref(0)
 const loading = ref(false)
 const modalLoading = ref(false)
 const selectedRowKeys = ref([])
+const productFile = ref(null)
 
 // Modal
 const modalVisible = ref(false)
@@ -161,6 +165,45 @@ const onSearch = async () => {
 
 const onSelectChange = (selectedKeys) => {
   selectedRowKeys.value = selectedKeys
+}
+
+const triggerProductImport = () => {
+  productFile.value?.click()
+}
+
+const importProducts = async (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  try {
+    const text = await file.text()
+    const json = JSON.parse(text)
+    const { data } = await RestApi.products.import({ body: json })
+    if (data.value?.status === 'success') {
+      message.success('Nhập sản phẩm thành công!')
+      await fetchProducts({ ...param.value })
+    } else {
+      throw new Error(data.value?.message || 'Nhập thất bại')
+    }
+  } catch (err) {
+    message.error(err.message || 'Nhập thất bại')
+  } finally {
+    e.target.value = ''
+  }
+}
+
+const exportProducts = async () => {
+  try {
+    const { data } = await RestApi.products.export()
+    const blob = new Blob([JSON.stringify(data.value?.data || data.value, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'products.json'
+    link.click()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    message.error('Xuất thất bại')
+  }
 }
 
 const openAddModal = () => {
