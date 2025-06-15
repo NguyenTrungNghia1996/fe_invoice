@@ -45,8 +45,6 @@
 <script setup>
 const settingStore = useSettingStore();
 const userStore = useUserStore();
-console.log("🚀 ~ userStore:", userStore.user.role)
-
 import { useRouter } from "vue-router";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
