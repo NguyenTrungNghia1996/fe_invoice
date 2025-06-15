@@ -16,14 +16,17 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <a-popconfirm v-if="userStore.role === 'admin'" title="Bạn chắc chắn muốn xoá các hóa đơn đã chọn?" ok-text="Xoá" cancel-text="Huỷ" @confirm="handleDeleteSelected" :disabled="!selectedRowKeys.length">
-              <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">
-                Xoá đã chọn ({{ selectedRowKeys.length }})
-              </a-button>
-            </a-popconfirm>
-            <a-button type="primary" @click="exportToExcel">Xuất excel</a-button>
-          </div>
+          <a-popconfirm v-if="userStore.role === 'admin'" title="Bạn chắc chắn muốn xoá các hóa đơn đã chọn?" ok-text="Xoá" cancel-text="Huỷ" @confirm="handleDeleteSelected" :disabled="!selectedRowKeys.length">
+            <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">
+              Xoá đã chọn ({{ selectedRowKeys.length }})
+            </a-button>
+          </a-popconfirm>
+          <input type="file" accept="application/json" ref="invoiceFile" class="hidden" @change="importInvoices" />
+          <a-button @click="triggerInvoiceImport">Nhập</a-button>
+          <a-button @click="exportInvoices">Xuất</a-button>
+          <a-button type="primary" @click="exportToExcel">Xuất excel</a-button>
         </div>
+      </div>
       </div>
 
       <!-- Stats Summary -->
@@ -257,6 +260,46 @@ const handleDeleteSelected = async () => {
     await fetchInvoices({ ...param.value })
   } catch (e) {
     message.error('Không thể xoá hàng loạt!')
+  }
+}
+
+const invoiceFile = ref(null)
+const triggerInvoiceImport = () => {
+  invoiceFile.value?.click()
+}
+
+const importInvoices = async (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  try {
+    const text = await file.text()
+    const json = JSON.parse(text)
+    const { data } = await RestApi.invoices.import({ body: json })
+    if (data.value?.status === 'success') {
+      message.success('Nhập hóa đơn thành công!')
+      await fetchInvoices({ ...param.value })
+    } else {
+      throw new Error(data.value?.message || 'Nhập thất bại')
+    }
+  } catch (err) {
+    message.error(err.message || 'Nhập thất bại')
+  } finally {
+    e.target.value = ''
+  }
+}
+
+const exportInvoices = async () => {
+  try {
+    const { data } = await RestApi.invoices.export()
+    const blob = new Blob([JSON.stringify(data.value?.data || data.value, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'invoices.json'
+    link.click()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    message.error('Xuất thất bại')
   }
 }
 

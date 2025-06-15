@@ -3,7 +3,11 @@ let ENDPOINTS = {
   S3: "/api/presigned_url",
   //PRODUCTS
   PRODUCTS: "/api/products",
+  PRODUCTS_IMPORT: "/api/products/import",
+  PRODUCTS_EXPORT: "/api/products/export",
   INVOICES: "/api/invoices",
+  INVOICES_IMPORT: "/api/invoices/import",
+  INVOICES_EXPORT: "/api/invoices/export",
   SETTINGS: "/api/settings",
   USERS: "/api/users",
   USERS_PERSON: "/api/users/person",
@@ -199,6 +203,12 @@ class Products {
   async delete(data) {
     return await this.request.delete(ENDPOINTS.PRODUCTS, data);
   }
+  async import(data) {
+    return await this.request.post(ENDPOINTS.PRODUCTS_IMPORT, data);
+  }
+  async export(data) {
+    return await this.request.get(ENDPOINTS.PRODUCTS_EXPORT, data);
+  }
 }
 
 class Invoices {
@@ -216,6 +226,12 @@ class Invoices {
   }
   async delete(data) {
     return await this.request.delete(ENDPOINTS.INVOICES, data);
+  }
+  async import(data) {
+    return await this.request.post(ENDPOINTS.INVOICES_IMPORT, data);
+  }
+  async export(data) {
+    return await this.request.get(ENDPOINTS.INVOICES_EXPORT, data);
   }
 }
 
