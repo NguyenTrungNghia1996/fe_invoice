@@ -22,8 +22,8 @@
             </a-button>
           </a-popconfirm>
           <input type="file" accept="application/json" ref="invoiceFile" class="hidden" @change="importInvoices" />
-          <a-button @click="triggerInvoiceImport">Nhập</a-button>
-          <a-button @click="exportInvoices">Xuất</a-button>
+          <!-- <a-button @click="triggerInvoiceImport">Nhập</a-button>
+          <a-button @click="exportInvoices">Xuất</a-button> -->
           <a-button type="primary" @click="exportToExcel">Xuất excel</a-button>
         </div>
       </div>
