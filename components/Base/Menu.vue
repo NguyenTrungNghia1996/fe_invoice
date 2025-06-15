@@ -44,6 +44,7 @@
 
 <script setup>
 const settingStore = useSettingStore();
+const userStore = useUserStore();
 import { useRouter } from "vue-router";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
