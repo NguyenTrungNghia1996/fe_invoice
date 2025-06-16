@@ -330,7 +330,7 @@ const generatePrintableHtml = (invoice, store = {}) => {
     <hr/>
     <div style="text-align:center; font-weight:bold; margin: 5px 0;">HÓA ĐƠN BÁN HÀNG</div>
     <div style="text-align:center;">Số HĐ: <b>${invoice.code}</b></div>
-    <div style="text-align:center;">Ngày: ${createdAt}</div>
+    <div style="text-align:center; padding-bottom: 20px;">Ngày: ${createdAt}</div>
   <table style="width:100%; font-size:16px;">
       <thead>
         <tr>
@@ -338,8 +338,8 @@ const generatePrintableHtml = (invoice, store = {}) => {
         </tr>
         <tr>
           <th style="text-align:left;">Tên SP</th>
-          <th style="text-align:right;">ĐG</th>
-          <th style="text-align:right;">SL</th>
+          <th style="text-align:center;">ĐG</th>
+          <th style="text-align:center;">SL</th>
           <th style="text-align:right;">TT</th>
         </tr>
         <tr>
@@ -350,8 +350,8 @@ const generatePrintableHtml = (invoice, store = {}) => {
         ${invoice.items.map((item, index) => `
           <tr>
             <td style="word-break: break-word;">${item.name}</td>
-            <td style="text-align:right; white-space:nowrap;">${formatCurrency(item.price)}</td>
-            <td style="text-align:right;">${item.quantity}</td>
+            <td style="text-align:center; white-space:nowrap;">${formatCurrency(item.price)}</td>
+            <td style="text-align:center;">${item.quantity}</td>
             <td style="text-align:right; white-space:nowrap;">${formatCurrency(item.price * item.quantity)}</td>
           </tr>
           ${index < invoice.items.length - 1 ? `
@@ -366,7 +366,7 @@ const generatePrintableHtml = (invoice, store = {}) => {
       Tổng cộng: ${formatCurrency(calculateInvoiceTotal(invoice))}
     </div>
     ${invoice.note ? `<div style="font-size:16px;">Ghi chú: ${invoice.note}</div>` : ''}
-    <div style="font-weight:bold; white-space:nowrap;text-align:center; margin-top:10px; font-size:16px;">Cảm ơn quý khách!</div>
+    <div style="font-weight:bold; white-space:nowrap;text-align:center; margin-top:10px; font-size:16px; padding-top: 10px;">Cảm ơn quý khách!</div>
   </div>
 `;
 
