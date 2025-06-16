@@ -181,41 +181,31 @@ return `
     <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
     ${store.address ? `<div style="text-align:center;">Địa chỉ: ${store.address}</div>` : ''}
     ${store.phone ? `<div style="text-align:center;">Điện thoại: ${store.phone}</div>` : ''}
-    <hr/>
+    <hr />
     <div style="text-align:center; font-weight:bold; margin: 5px 0;">HÓA ĐƠN BÁN HÀNG</div>
     <div style="text-align:center;">Số HĐ: <b>${invoice.code}</b></div>
     <div style="text-align:center; padding-bottom: 20px;">Ngày: ${createdAt}</div>
-    <table style="width:100%; font-size:16px;">
+
+    <table style="width:100%; font-size:16px; border-collapse: collapse;" border="1">
       <thead>
         <tr>
-          <td colspan="4"><hr style="border: none; border-top: 1px solid #000; margin: 4px 0;" /></td>
-        </tr>
-        <tr>
-          <th style="text-align:left;">Tên SP</th>
-          <th style="text-align:center;">ĐG</th>
-          <th style="text-align:center;">SL</th>
-          <th style="text-align:right;">TT</th>
-        </tr>
-        <tr>
-          <td colspan="4"><hr style="border: none; border-top: 1px solid #000; margin: 4px 0;" /></td>
+          <th style="text-align:left; padding: 4px;">Tên SP</th>
+          <th style="text-align:center; padding: 4px;">ĐG</th>
+          <th style="text-align:center; padding: 4px;">SL</th>
+          <th style="text-align:right; padding: 4px;">TT</th>
         </tr>
       </thead>
       <tbody>
-        ${invoice.items.map((item, index) => `
+        ${invoice.items.map(item => `
           <tr>
-            <td style="word-break: break-word;">${item.name}</td>
-            <td style="text-align:center; white-space:nowrap;">${formatCurrency(item.price)}</td>
-            <td style="text-align:center;">${item.quantity}</td>
-            <td style="text-align:right; white-space:nowrap;">${formatCurrency(item.price * item.quantity)}</td>
+            <td style="word-break: break-word; padding: 4px;">${item.name}</td>
+            <td style="text-align:center; white-space:nowrap; padding: 4px;">${formatCurrency(item.price)}</td>
+            <td style="text-align:center; padding: 4px;">${item.quantity}</td>
+            <td style="text-align:right; white-space:nowrap; padding: 4px;">${formatCurrency(item.price * item.quantity)}</td>
           </tr>
-          ${index < invoice.items.length - 1 ? `
-            <tr><td colspan="4"><hr style="border: none; border-top: 1px dashed #000;" /></td></tr>
-          ` : ''}
         `).join('')}
       </tbody>
     </table>
-
-    <hr />
     <div style="text-align:right; font-weight:bold; white-space:nowrap; font-size:20px;">
       Tổng cộng: ${formatCurrency(calculateTotal(invoice.items))} đ
     </div>
@@ -223,6 +213,7 @@ return `
     <div style=" font-weight:bold; white-space:nowrap;text-align:center; margin-top:10px; font-size:16px; padding-top: 10px;">Cảm ơn quý khách!</div>
   </div>
 `;
+
 }
 
 const formatCurrency = (val) => {

@@ -57,7 +57,8 @@
 
       <!-- Table -->
       <div class="bg-white">
-        <a-table :columns="columns" :data-source="invoices" :loading="loading" :pagination="pagination" :row-selection="{ selectedRowKeys, onChange: onSelectChange }" row-key="id" size="small" @change="handleTableChange" bordered>
+        <!-- <a-table :columns="columns" :data-source="invoices" :loading="loading" :pagination="pagination" :row-selection="{ selectedRowKeys, onChange: onSelectChange }" row-key="id" size="small" @change="handleTableChange" bordered> -->
+        <a-table :columns="columns" :data-source="invoices" :loading="loading" :pagination="false" :row-selection="{ selectedRowKeys, onChange: onSelectChange }" row-key="id" size="small" @change="handleTableChange" bordered>
           <template #bodyCell="{ column, record }">
             <template v-if="column.key === 'createdAt'">
               {{ formatDate(record.createdAt) }}
@@ -143,8 +144,8 @@ const { RestApi } = useApi()
 const userStore = useUserStore()
 
 const param = ref({
-  page: 1,
-  limit: 10,
+  // page: 1,
+  // limit: 10,
   from: dayjs().startOf('month').format('DD/MM/YYYY'),
   to: dayjs().endOf('month').format('DD/MM/YYYY'),
   code: ''
@@ -182,8 +183,8 @@ const detailColumns = [
 ]
 
 const pagination = computed(() => ({
-  current: param.value.page,
-  pageSize: param.value.limit,
+  // current: param.value.page,
+  // pageSize: param.value.limit,
   total: summary.value.totalInvoices,
   showSizeChanger: true,
   pageSizeOptions: ['1', '10', '20', '50', '100'],
@@ -208,8 +209,8 @@ const fetchInvoices = async (paramSource) => {
 }
 
 const handleTableChange = async (pager) => {
-  param.value.page = pager.current
-  param.value.limit = pager.pageSize == 1 ? summary.value.totalInvoices : pager.pageSize
+  // param.value.page = pager.current
+  // param.value.limit = pager.pageSize == 1 ? summary.value.totalInvoices : pager.pageSize
   await fetchInvoices({ ...param.value })
 }
 
@@ -217,13 +218,13 @@ const handleDateChange = async (dates) => {
   if (dates?.length === 2) {
     param.value.from = dates[0].format('DD/MM/YYYY')
     param.value.to = dates[1].format('DD/MM/YYYY')
-    param.value.page = 1
+    // param.value.page = 1
     await fetchInvoices({ ...param.value })
   }
 }
 
 const onSearch = async () => {
-  param.value.page = 1
+  // param.value.page = 1
   param.value.code = search_text.value
   await fetchInvoices({ ...param.value })
 }
@@ -321,7 +322,7 @@ const formatDateTime = (val) =>
 const generatePrintableHtml = (invoice, store = {}) => {
   const createdAt = new Date(invoice.createdAt).toLocaleString('vi-VN')
 
-  return `
+return `
   <div style="font-family: monospace; font-size: 16px; width: 100%;">
     ${store.logoUrl ? `<div style="text-align:center;"><img src="${store.logoUrl}" style="max-height: 60px; margin-bottom: 5px;" /></div>` : ''}
     <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
@@ -331,37 +332,27 @@ const generatePrintableHtml = (invoice, store = {}) => {
     <div style="text-align:center; font-weight:bold; margin: 5px 0;">HÓA ĐƠN BÁN HÀNG</div>
     <div style="text-align:center;">Số HĐ: <b>${invoice.code}</b></div>
     <div style="text-align:center; padding-bottom: 20px;">Ngày: ${createdAt}</div>
-  <table style="width:100%; font-size:16px;">
+
+    <table style="width:100%; font-size:16px; border-collapse: collapse;" border="1">
       <thead>
         <tr>
-          <td colspan="4"><hr style="border: none; border-top: 1px solid #000; margin: 4px 0;" /></td>
-        </tr>
-        <tr>
-          <th style="text-align:left;">Tên SP</th>
-          <th style="text-align:center;">ĐG</th>
-          <th style="text-align:center;">SL</th>
-          <th style="text-align:right;">TT</th>
-        </tr>
-        <tr>
-          <td colspan="4"><hr style="border: none; border-top: 1px solid #000; margin: 4px 0;" /></td>
+          <th style="text-align:left;  padding:3px;">Tên SP</th>
+          <th style="text-align:center;  padding:3px;">ĐG</th>
+          <th style="text-align:center;  padding:3px;">SL</th>
+          <th style="text-align:right;  padding:3px;">TT</th>
         </tr>
       </thead>
       <tbody>
         ${invoice.items.map((item, index) => `
           <tr>
-            <td style="word-break: break-word;">${item.name}</td>
-            <td style="text-align:center; white-space:nowrap;">${formatCurrency(item.price)}</td>
-            <td style="text-align:center;">${item.quantity}</td>
-            <td style="text-align:right; white-space:nowrap;">${formatCurrency(item.price * item.quantity)}</td>
+            <td style="word-break: break-word; padding:3px;">${item.name}</td>
+            <td style="text-align:center; white-space:nowrap; padding:3px;">${formatCurrency(item.price)}</td>
+            <td style="text-align:center; padding:3px;">${item.quantity}</td>
+            <td style="text-align:right; white-space:nowrap; padding:3px;">${formatCurrency(item.price * item.quantity)}</td>
           </tr>
-          ${index < invoice.items.length - 1 ? `
-            <tr><td colspan="4"><hr style="border: none; border-top: 1px dashed #000; margin: 2px 0;" /></td></tr>
-          ` : ''}
         `).join('')}
       </tbody>
     </table>
-
-    <hr />
     <div style="text-align:right; font-weight:bold; white-space:nowrap; font-size:16px;">
       Tổng cộng: ${formatCurrency(calculateInvoiceTotal(invoice))}
     </div>
