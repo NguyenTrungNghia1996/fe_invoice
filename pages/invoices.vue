@@ -253,10 +253,31 @@ const handleDelete = async (id) => {
 }
 
 const handleDeleteSelected = async () => {
-  if (!selectedRowKeys.value.length) return
+  // if (!selectedRowKeys.value.length) return
+  // try {
+  //   await RestApi.invoices.delete({ params: { id: selectedRowKeys.value.join(',') } })
+  //   message.success(`Đã xoá ${selectedRowKeys.value.length} hóa đơn`)
+  //   selectedRowKeys.value = []
+  //   await fetchInvoices({ ...param.value })
+  // } catch (e) {
+  //   message.error('Không thể xoá hàng loạt!')
+  // }
+    if (!selectedRowKeys.value.length) return
+
+  const chunkSize = 10
+  const total = selectedRowKeys.value.length
+  const chunks = []
+
+  // Chia thành các mảng nhỏ 10 phần tử
+  for (let i = 0; i < total; i += chunkSize) {
+    chunks.push(selectedRowKeys.value.slice(i, i + chunkSize))
+  }
+
   try {
-    await RestApi.invoices.delete({ params: { id: selectedRowKeys.value.join(',') } })
-    message.success(`Đã xoá ${selectedRowKeys.value.length} hóa đơn`)
+    for (const chunk of chunks) {
+      await RestApi.invoices.delete({ params: { id: chunk.join(',') } })
+    }
+    message.success(`Đã xoá ${total} hóa đơn thành công theo từng lô 10 cái.`)
     selectedRowKeys.value = []
     await fetchInvoices({ ...param.value })
   } catch (e) {
