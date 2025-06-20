@@ -58,7 +58,7 @@
       <!-- Table -->
       <div class="bg-white">
         <!-- <a-table :columns="columns" :data-source="invoices" :loading="loading" :pagination="pagination" :row-selection="{ selectedRowKeys, onChange: onSelectChange }" row-key="id" size="small" @change="handleTableChange" bordered> -->
-        <a-table :columns="columns" :data-source="invoices" :loading="loading" :pagination="false" :row-selection="{ selectedRowKeys, onChange: onSelectChange }" row-key="id" size="small" @change="handleTableChange" bordered>
+        <a-table :columns="columns" :data-source="invoices" :loading="loading" :pagination="false" row-key="id" size="small" @change="handleTableChange" bordered>
           <template #bodyCell="{ column, record }">
             <template v-if="column.key === 'createdAt'">
               {{ formatDate(record.createdAt) }}
@@ -84,11 +84,6 @@
                 <a-button type="text" size="small" @click="printInvoice(record)">
                   In lại
                 </a-button>
-                <a-popconfirm v-if="userStore.role === 'admin'" title="Bạn chắc chắn muốn xoá?" ok-text="Xoá" cancel-text="Huỷ" @confirm="() => handleDelete(record.id)">
-                  <a-button type="text" size="small" danger class="hover:bg-red-50 px-1">
-                    Xoá
-                  </a-button>
-                </a-popconfirm>
               </div>
             </template>
           </template>
@@ -197,6 +192,7 @@ const fetchInvoices = async (paramSource) => {
   try {
     const { data } = await RestApi.invoices.list({ params: paramSource })
     invoices.value = data.value?.data?.invoices || []
+    selectedRowKeys.value = invoices.value.map(inv => inv.id)
     summary.value = {
       totalInvoices: data.value?.data?.total || 0,
       totalAmount: data.value?.data?.totalAmount || 0,
@@ -229,9 +225,6 @@ const onSearch = async () => {
   await fetchInvoices({ ...param.value })
 }
 
-const onSelectChange = (keys) => {
-  selectedRowKeys.value = keys
-}
 
 const calculateInvoiceTotal = (invoice) =>
   invoice.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
@@ -241,16 +234,6 @@ const viewDetail = (invoice) => {
   detailVisible.value = true
 }
 
-const handleDelete = async (id) => {
-  try {
-    await RestApi.invoices.delete({ params: { id } })
-    message.success('Xoá thành công!')
-    selectedRowKeys.value = selectedRowKeys.value.filter(k => k !== id)
-    await fetchInvoices({ ...param.value })
-  } catch (e) {
-    message.error('Không thể xoá!')
-  }
-}
 
 const handleDeleteSelected = async () => {
   // if (!selectedRowKeys.value.length) return
