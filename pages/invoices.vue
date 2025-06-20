@@ -177,7 +177,6 @@ const columns = [
   { title: 'Mã hóa đơn', dataIndex: 'code', key: 'code', width: '180px' },
   { title: 'Ngày tạo', dataIndex: 'createdAt', key: 'createdAt', width: '150px' },
   { title: 'Người tạo', key: 'createdBy', dataIndex: 'createdBy', width: '120px' },
-  { title: 'Người xoá', key: 'deletedBy', width: '120px' },
   { title: 'Sản phẩm', key: 'items' },
   { title: 'Tổng tiền', key: 'total', align: 'right', width: '150px' },
   { title: 'Hành động', key: 'actions', width: '150px', align: 'center' }
