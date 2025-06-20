@@ -131,11 +131,12 @@ const pagination = computed(() => ({
   size: 'small'
 }))
 
-const fetchInvoices = async () => {
+const fetchInvoices = async (args) => {
   loading.value = true
   try {
-    const { data } = await RestApi.invoices.list({ params: param.value })
+    const { data } = await RestApi.invoices.list({ params: args })
     invoices.value = data.value?.data?.invoices || []
+    console.log("🚀 ~ fetchInvoices ~ data:", data)
     summary.value = {
       totalInvoices: data.value?.data?.total || 0,
       totalAmount: data.value?.data?.totalAmount || 0,
@@ -147,12 +148,12 @@ const fetchInvoices = async () => {
   }
 }
 
-watchEffect(fetchInvoices)
+watchEffect(() => fetchInvoices({ ...param.value }))
 
 const handleTableChange = async pager => {
   param.value.page = pager.current
   param.value.limit = pager.pageSize
-  await fetchInvoices()
+  await fetchInvoices({ ...param.value })
 }
 
 const handleDateChange = async dates => {
@@ -160,13 +161,13 @@ const handleDateChange = async dates => {
     param.value.from = dates[0].format('DD/MM/YYYY')
     param.value.to = dates[1].format('DD/MM/YYYY')
     param.value.page = 1
-    await fetchInvoices()
+    await fetchInvoices({ ...param.value })
   }
 }
 
 const onSearch = async () => {
   param.value.page = 1
-  await fetchInvoices()
+  await fetchInvoices({ ...param.value })
 }
 
 const calculateInvoiceTotal = invoice => invoice.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
