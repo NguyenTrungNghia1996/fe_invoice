@@ -38,7 +38,7 @@ export const useSettingStore = defineStore(
         {
           title: "Báo Cáo",
           key: "reports",
-          url: "/reports",
+          url: "/report",
           bitIndex: 0,
           icon: "ant-design:bar-chart-outlined",
           children: [],
