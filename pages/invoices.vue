@@ -16,17 +16,17 @@
           </div>
 
           <div class="flex items-center gap-2">
-          <a-popconfirm v-if="userStore.role === 'admin'" title="Bạn chắc chắn muốn xoá các hóa đơn đã chọn?" ok-text="Xoá" cancel-text="Huỷ" @confirm="handleDeleteSelected" :disabled="!selectedRowKeys.length">
-            <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">
-              Xoá đã chọn ({{ selectedRowKeys.length }})
-            </a-button>
-          </a-popconfirm>
-          <input type="file" accept="application/json" ref="invoiceFile" class="hidden" @change="importInvoices" />
-          <!-- <a-button @click="triggerInvoiceImport">Nhập</a-button>
+            <a-popconfirm v-if="userStore.role === 'admin'" title="Bạn chắc chắn muốn xoá các hóa đơn đã chọn?" ok-text="Xoá" cancel-text="Huỷ" @confirm="handleDeleteSelected" :disabled="!selectedRowKeys.length">
+              <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">
+                Xoá đã chọn ({{ selectedRowKeys.length }})
+              </a-button>
+            </a-popconfirm>
+            <input type="file" accept="application/json" ref="invoiceFile" class="hidden" @change="importInvoices" />
+            <!-- <a-button @click="triggerInvoiceImport">Nhập</a-button>
           <a-button @click="exportInvoices">Xuất</a-button> -->
-          <a-button type="primary" @click="exportToExcel">Xuất excel</a-button>
+            <a-button type="primary" @click="exportToExcel">Xuất excel</a-button>
+          </div>
         </div>
-      </div>
       </div>
 
       <!-- Stats Summary -->
@@ -236,16 +236,7 @@ const viewDetail = (invoice) => {
 
 
 const handleDeleteSelected = async () => {
-  // if (!selectedRowKeys.value.length) return
-  // try {
-  //   await RestApi.invoices.delete({ params: { id: selectedRowKeys.value.join(',') } })
-  //   message.success(`Đã xoá ${selectedRowKeys.value.length} hóa đơn`)
-  //   selectedRowKeys.value = []
-  //   await fetchInvoices({ ...param.value })
-  // } catch (e) {
-  //   message.error('Không thể xoá hàng loạt!')
-  // }
-    if (!selectedRowKeys.value.length) return
+  if (!selectedRowKeys.value.length) return
 
   const chunkSize = 10
   const total = selectedRowKeys.value.length
@@ -260,7 +251,7 @@ const handleDeleteSelected = async () => {
     for (const chunk of chunks) {
       await RestApi.invoices.delete({ params: { id: chunk.join(',') } })
     }
-    message.success(`Đã xoá ${total} hóa đơn thành công theo từng lô 10 cái.`)
+    message.success(`Đã xoá ${total} hóa đơn thành công`)
     selectedRowKeys.value = []
     await fetchInvoices({ ...param.value })
   } catch (e) {
@@ -326,7 +317,7 @@ const formatDateTime = (val) =>
 const generatePrintableHtml = (invoice, store = {}) => {
   const createdAt = new Date(invoice.createdAt).toLocaleString('vi-VN')
 
-return `
+  return `
   <div style="font-family: monospace; font-size: 16px; width: 100%;">
     ${store.logoUrl ? `<div style="text-align:center;"><img src="${store.logoUrl}" style="max-height: 60px; margin-bottom: 5px;" /></div>` : ''}
     <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
