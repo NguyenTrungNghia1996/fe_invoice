@@ -143,7 +143,8 @@ const param = ref({
   // limit: 10,
   from: dayjs().format('DD/MM/YYYY'),
   to: dayjs().format('DD/MM/YYYY'),
-  code: ''
+  code: '',
+  deleted:false
 })
 const dateRange = ref([
   dayjs(param.value.from, 'DD/MM/YYYY'),
