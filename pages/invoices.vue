@@ -141,8 +141,8 @@ const userStore = useUserStore()
 const param = ref({
   // page: 1,
   // limit: 10,
-  from: dayjs().startOf('month').format('DD/MM/YYYY'),
-  to: dayjs().endOf('month').format('DD/MM/YYYY'),
+  from: dayjs().format('DD/MM/YYYY'),
+  to: dayjs().format('DD/MM/YYYY'),
   code: ''
 })
 const dateRange = ref([
