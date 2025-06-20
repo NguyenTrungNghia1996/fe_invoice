@@ -48,11 +48,7 @@
       <!-- Product Stats -->
       <div class="bg-white p-4 rounded-lg shadow-sm mb-4">
         <div class="font-semibold text-gray-700 mb-2">Thống kê sản phẩm:</div>
-        <ul class="text-sm space-y-1">
-          <li v-for="(stat, key) in summary.productStats" :key="key">
-            • {{ stat.name }}: {{ stat.quantity }} sản phẩm – {{ formatCurrency(stat.revenue) }}
-          </li>
-        </ul>
+        <ProductStats :stats="summary.productStats" />
       </div>
 
       <!-- Table -->
@@ -62,6 +58,14 @@
           <template #bodyCell="{ column, record }">
             <template v-if="column.key === 'createdAt'">
               {{ formatDate(record.createdAt) }}
+            </template>
+
+            <template v-if="column.key === 'createdBy'">
+              {{ record.createdBy?.username || '' }}
+            </template>
+
+            <template v-if="column.key === 'deletedBy'">
+              {{ record.deletedBy?.username || '' }}
             </template>
 
             <template v-if="column.key === 'items'">
@@ -100,6 +104,12 @@
             <div>{{ selectedInvoice.code }}</div>
             <div class="font-semibold mt-2">Ngày tạo:</div>
             <div>{{ formatDateTime(selectedInvoice.createdAt) }}</div>
+            <div class="font-semibold mt-2">Người tạo:</div>
+            <div>{{ selectedInvoice.createdBy?.username }}</div>
+            <div v-if="selectedInvoice.deletedBy" class="mt-2">
+              <div class="font-semibold">Xoá bởi:</div>
+              <div>{{ selectedInvoice.deletedBy?.username }} – {{ formatDateTime(selectedInvoice.deletedAt) }}</div>
+            </div>
           </div>
           <div class="text-right">
             <div class="font-semibold">Tổng cộng:</div>
@@ -166,6 +176,8 @@ const selectedRowKeys = ref([])
 const columns = [
   { title: 'Mã hóa đơn', dataIndex: 'code', key: 'code', width: '180px' },
   { title: 'Ngày tạo', dataIndex: 'createdAt', key: 'createdAt', width: '150px' },
+  { title: 'Người tạo', key: 'createdBy', dataIndex: 'createdBy', width: '120px' },
+  { title: 'Người xoá', key: 'deletedBy', width: '120px' },
   { title: 'Sản phẩm', key: 'items' },
   { title: 'Tổng tiền', key: 'total', align: 'right', width: '150px' },
   { title: 'Hành động', key: 'actions', width: '150px', align: 'center' }
