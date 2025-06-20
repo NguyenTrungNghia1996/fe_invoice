@@ -180,7 +180,7 @@ const onSearch = async () => {
 
 const showAllInvoices = async () => {
   param.value.page = 1
-  param.value.limit = summary.value.totalInvoices || 1000
+  param.value.limit = summary.value.totalInvoices || 0
   await fetchInvoices({ ...param.value })
 }
 
