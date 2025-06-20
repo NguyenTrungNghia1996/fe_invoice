@@ -30,6 +30,7 @@
           <a-select-option :value="false">Chưa xoá</a-select-option>
           <a-select-option :value="true">Đã xoá</a-select-option>
         </a-select>
+        <a-button type="primary" @click="showAllInvoices">Hiển thị toàn bộ</a-button>
       </div>
     </div>
 
@@ -65,7 +66,10 @@
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'createdAt'">
-          {{ formatDate(record.createdAt) }}
+          {{ formatDateTime(record.createdAt) }}
+        </template>
+        <template v-if="column.key === 'deletedAt'">
+          {{ record.deletedAt ? formatDateTime(record.deletedAt) : '' }}
         </template>
         <template v-if="column.key === 'createdBy'">
           {{ record.createdBy?.username || '' }}
@@ -118,7 +122,8 @@ const loading = ref(false)
 
 const columns = [
   { title: 'Mã hóa đơn', dataIndex: 'code', key: 'code', width: '180px' },
-  { title: 'Ngày tạo', dataIndex: 'createdAt', key: 'createdAt', width: '150px' },
+  { title: 'Thời gian tạo', dataIndex: 'createdAt', key: 'createdAt', width: '170px' },
+  { title: 'Thời gian xoá', dataIndex: 'deletedAt', key: 'deletedAt', width: '170px' },
   { title: 'Người tạo', key: 'createdBy', dataIndex: 'createdBy', width: '120px' },
   { title: 'Người xoá', key: 'deletedBy', width: '120px' },
   { title: 'Sản phẩm', key: 'items' },
@@ -140,7 +145,6 @@ const fetchInvoices = async (args) => {
   try {
     const { data } = await RestApi.invoices.list({ params: args })
     invoices.value = data.value?.data?.invoices || []
-    console.log("🚀 ~ fetchInvoices ~ data:", data)
     summary.value = {
       totalInvoices: data.value?.data?.total || 0,
       totalAmount: data.value?.data?.totalAmount || 0,
@@ -174,6 +178,12 @@ const onSearch = async () => {
   await fetchInvoices({ ...param.value })
 }
 
+const showAllInvoices = async () => {
+  param.value.page = 1
+  param.value.limit = summary.value.totalInvoices || 1000
+  await fetchInvoices({ ...param.value })
+}
+
 const calculateInvoiceTotal = invoice => invoice.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
 const formatCurrency = val => new Intl.NumberFormat('vi-VN', {
@@ -183,4 +193,5 @@ const formatCurrency = val => new Intl.NumberFormat('vi-VN', {
 }).format(val).replace(/[₫\s]/g, '')
 
 const formatDate = val => dayjs(val).format('DD/MM/YYYY')
+const formatDateTime = val => dayjs(val).format('HH:mm DD/MM/YYYY')
 </script>
