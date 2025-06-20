@@ -50,11 +50,7 @@
 
     <div class="bg-white p-4 rounded-lg shadow-sm mb-4">
       <div class="font-semibold text-gray-700 mb-2">Thống kê sản phẩm:</div>
-      <ul class="text-sm space-y-1">
-        <li v-for="(stat, key) in summary.productStats" :key="key">
-          • {{ stat.name }}: {{ stat.quantity }} sản phẩm – {{ formatCurrency(stat.revenue) }}
-        </li>
-      </ul>
+      <ProductStats :stats="summary.productStats" />
     </div>
 
     <a-table
@@ -70,6 +66,12 @@
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'createdAt'">
           {{ formatDate(record.createdAt) }}
+        </template>
+        <template v-if="column.key === 'createdBy'">
+          {{ record.createdBy?.username || '' }}
+        </template>
+        <template v-if="column.key === 'deletedBy'">
+          {{ record.deletedBy?.username || '' }}
         </template>
         <template v-if="column.key === 'items'">
           <div class="flex flex-col gap-1">
@@ -117,6 +119,8 @@ const loading = ref(false)
 const columns = [
   { title: 'Mã hóa đơn', dataIndex: 'code', key: 'code', width: '180px' },
   { title: 'Ngày tạo', dataIndex: 'createdAt', key: 'createdAt', width: '150px' },
+  { title: 'Người tạo', key: 'createdBy', dataIndex: 'createdBy', width: '120px' },
+  { title: 'Người xoá', key: 'deletedBy', width: '120px' },
   { title: 'Sản phẩm', key: 'items' },
   { title: 'Tổng tiền', key: 'total', align: 'right', width: '150px' }
 ]
