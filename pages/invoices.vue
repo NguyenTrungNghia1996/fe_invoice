@@ -16,17 +16,17 @@
           </div>
 
           <div class="flex items-center gap-2">
-          <a-popconfirm v-if="userStore.role === 'admin'" title="Bạn chắc chắn muốn xoá các hóa đơn đã chọn?" ok-text="Xoá" cancel-text="Huỷ" @confirm="handleDeleteSelected" :disabled="!selectedRowKeys.length">
-            <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">
-              Xoá đã chọn ({{ selectedRowKeys.length }})
-            </a-button>
-          </a-popconfirm>
-          <input type="file" accept="application/json" ref="invoiceFile" class="hidden" @change="importInvoices" />
-          <!-- <a-button @click="triggerInvoiceImport">Nhập</a-button>
+            <a-popconfirm v-if="userStore.role === 'admin'" title="Bạn chắc chắn muốn xoá các hóa đơn đã chọn?" ok-text="Xoá" cancel-text="Huỷ" @confirm="handleDeleteSelected" :disabled="!selectedRowKeys.length">
+              <a-button danger :disabled="!selectedRowKeys.length" class="flex items-center gap-1">
+                Xoá đã chọn ({{ selectedRowKeys.length }})
+              </a-button>
+            </a-popconfirm>
+            <input type="file" accept="application/json" ref="invoiceFile" class="hidden" @change="importInvoices" />
+            <!-- <a-button @click="triggerInvoiceImport">Nhập</a-button>
           <a-button @click="exportInvoices">Xuất</a-button> -->
-          <a-button type="primary" @click="exportToExcel">Xuất excel</a-button>
+            <a-button type="primary" @click="exportToExcel">Xuất excel</a-button>
+          </div>
         </div>
-      </div>
       </div>
 
       <!-- Stats Summary -->
@@ -48,20 +48,24 @@
       <!-- Product Stats -->
       <div class="bg-white p-4 rounded-lg shadow-sm mb-4">
         <div class="font-semibold text-gray-700 mb-2">Thống kê sản phẩm:</div>
-        <ul class="text-sm space-y-1">
-          <li v-for="(stat, key) in summary.productStats" :key="key">
-            • {{ stat.name }}: {{ stat.quantity }} sản phẩm – {{ formatCurrency(stat.revenue) }}
-          </li>
-        </ul>
+        <ProductStats :stats="summary.productStats" />
       </div>
 
       <!-- Table -->
       <div class="bg-white">
         <!-- <a-table :columns="columns" :data-source="invoices" :loading="loading" :pagination="pagination" :row-selection="{ selectedRowKeys, onChange: onSelectChange }" row-key="id" size="small" @change="handleTableChange" bordered> -->
-        <a-table :columns="columns" :data-source="invoices" :loading="loading" :pagination="false" :row-selection="{ selectedRowKeys, onChange: onSelectChange }" row-key="id" size="small" @change="handleTableChange" bordered>
+        <a-table :columns="columns" :data-source="invoices" :loading="loading" :pagination="false" row-key="id" size="small" @change="handleTableChange" bordered>
           <template #bodyCell="{ column, record }">
             <template v-if="column.key === 'createdAt'">
               {{ formatDate(record.createdAt) }}
+            </template>
+
+            <template v-if="column.key === 'createdBy'">
+              {{ record.createdBy?.username || '' }}
+            </template>
+
+            <template v-if="column.key === 'deletedBy'">
+              {{ record.deletedBy?.username || '' }}
             </template>
 
             <template v-if="column.key === 'items'">
@@ -84,11 +88,6 @@
                 <a-button type="text" size="small" @click="printInvoice(record)">
                   In lại
                 </a-button>
-                <a-popconfirm v-if="userStore.role === 'admin'" title="Bạn chắc chắn muốn xoá?" ok-text="Xoá" cancel-text="Huỷ" @confirm="() => handleDelete(record.id)">
-                  <a-button type="text" size="small" danger class="hover:bg-red-50 px-1">
-                    Xoá
-                  </a-button>
-                </a-popconfirm>
               </div>
             </template>
           </template>
@@ -105,6 +104,12 @@
             <div>{{ selectedInvoice.code }}</div>
             <div class="font-semibold mt-2">Ngày tạo:</div>
             <div>{{ formatDateTime(selectedInvoice.createdAt) }}</div>
+            <div class="font-semibold mt-2">Người tạo:</div>
+            <div>{{ selectedInvoice.createdBy?.username }}</div>
+            <div v-if="selectedInvoice.deletedBy" class="mt-2">
+              <div class="font-semibold">Xoá bởi:</div>
+              <div>{{ selectedInvoice.deletedBy?.username }} – {{ formatDateTime(selectedInvoice.deletedAt) }}</div>
+            </div>
           </div>
           <div class="text-right">
             <div class="font-semibold">Tổng cộng:</div>
@@ -146,9 +151,10 @@ const userStore = useUserStore()
 const param = ref({
   // page: 1,
   // limit: 10,
-  from: dayjs().startOf('month').format('DD/MM/YYYY'),
-  to: dayjs().endOf('month').format('DD/MM/YYYY'),
-  code: ''
+  from: dayjs().format('DD/MM/YYYY'),
+  to: dayjs().format('DD/MM/YYYY'),
+  code: '',
+  deleted:false
 })
 const dateRange = ref([
   dayjs(param.value.from, 'DD/MM/YYYY'),
@@ -170,6 +176,7 @@ const selectedRowKeys = ref([])
 const columns = [
   { title: 'Mã hóa đơn', dataIndex: 'code', key: 'code', width: '180px' },
   { title: 'Ngày tạo', dataIndex: 'createdAt', key: 'createdAt', width: '150px' },
+  { title: 'Người tạo', key: 'createdBy', dataIndex: 'createdBy', width: '120px' },
   { title: 'Sản phẩm', key: 'items' },
   { title: 'Tổng tiền', key: 'total', align: 'right', width: '150px' },
   { title: 'Hành động', key: 'actions', width: '150px', align: 'center' }
@@ -197,6 +204,7 @@ const fetchInvoices = async (paramSource) => {
   try {
     const { data } = await RestApi.invoices.list({ params: paramSource })
     invoices.value = data.value?.data?.invoices || []
+    selectedRowKeys.value = invoices.value.map(inv => inv.id)
     summary.value = {
       totalInvoices: data.value?.data?.total || 0,
       totalAmount: data.value?.data?.totalAmount || 0,
@@ -229,9 +237,6 @@ const onSearch = async () => {
   await fetchInvoices({ ...param.value })
 }
 
-const onSelectChange = (keys) => {
-  selectedRowKeys.value = keys
-}
 
 const calculateInvoiceTotal = (invoice) =>
   invoice.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
@@ -241,28 +246,9 @@ const viewDetail = (invoice) => {
   detailVisible.value = true
 }
 
-const handleDelete = async (id) => {
-  try {
-    await RestApi.invoices.delete({ params: { id } })
-    message.success('Xoá thành công!')
-    selectedRowKeys.value = selectedRowKeys.value.filter(k => k !== id)
-    await fetchInvoices({ ...param.value })
-  } catch (e) {
-    message.error('Không thể xoá!')
-  }
-}
 
 const handleDeleteSelected = async () => {
-  // if (!selectedRowKeys.value.length) return
-  // try {
-  //   await RestApi.invoices.delete({ params: { id: selectedRowKeys.value.join(',') } })
-  //   message.success(`Đã xoá ${selectedRowKeys.value.length} hóa đơn`)
-  //   selectedRowKeys.value = []
-  //   await fetchInvoices({ ...param.value })
-  // } catch (e) {
-  //   message.error('Không thể xoá hàng loạt!')
-  // }
-    if (!selectedRowKeys.value.length) return
+  if (!selectedRowKeys.value.length) return
 
   const chunkSize = 10
   const total = selectedRowKeys.value.length
@@ -277,7 +263,7 @@ const handleDeleteSelected = async () => {
     for (const chunk of chunks) {
       await RestApi.invoices.delete({ params: { id: chunk.join(',') } })
     }
-    message.success(`Đã xoá ${total} hóa đơn thành công theo từng lô 10 cái.`)
+    message.success(`Đã xoá ${total} hóa đơn thành công`)
     selectedRowKeys.value = []
     await fetchInvoices({ ...param.value })
   } catch (e) {
@@ -343,7 +329,7 @@ const formatDateTime = (val) =>
 const generatePrintableHtml = (invoice, store = {}) => {
   const createdAt = new Date(invoice.createdAt).toLocaleString('vi-VN')
 
-return `
+  return `
   <div style="font-family: monospace; font-size: 16px; width: 100%;">
     ${store.logoUrl ? `<div style="text-align:center;"><img src="${store.logoUrl}" style="max-height: 60px; margin-bottom: 5px;" /></div>` : ''}
     <div style="text-align:center; font-weight:bold;">${store.storeName || 'CỬA HÀNG'}</div>
